@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Customize
+desktop.ini
+__*
+/Example/Properties/launchSettings.json

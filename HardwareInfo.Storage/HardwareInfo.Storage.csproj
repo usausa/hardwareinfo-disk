@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <CodeAnalysisRuleSet>..\Analyzers.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>HardwareInfo.Storage</PackageId>
+    <Title>HardwareInfo.Storage</Title>
+    <Description>HardwareInfo.Storage.</Description>
+    <PackageTags>hardware storage</PackageTags>
+  </PropertyGroup>
+
+</Project>

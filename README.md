@@ -1,0 +1,1 @@
+# hardwareinfo-storage

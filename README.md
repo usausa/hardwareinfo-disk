@@ -1,1 +1,1 @@
-# hardwareinfo-storage
+# hardwareinfo-smart

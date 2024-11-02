@@ -1,4 +1,4 @@
-namespace HardwareInfo.Storage;
+namespace HardwareInfo.Smart;
 
 using System.Runtime.InteropServices;
 

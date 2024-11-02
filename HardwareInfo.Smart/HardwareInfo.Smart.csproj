@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>HardwareInfo.Storage</PackageId>
-    <Title>HardwareInfo.Storage</Title>
-    <Description>HardwareInfo.Storage.</Description>
+    <PackageId>HardwareInfo.Smart</PackageId>
+    <Title>HardwareInfo.Smart</Title>
+    <Description>HardwareInfo.Smart.</Description>
     <PackageTags>hardware storage</PackageTags>
   </PropertyGroup>
 

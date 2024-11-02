@@ -1,4 +1,4 @@
-namespace HardwareInfo.Storage;
+namespace HardwareInfo.Smart;
 
 using Microsoft.Win32.SafeHandles;
 

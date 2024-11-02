@@ -1,4 +1,4 @@
-using HardwareInfo.Storage;
+using HardwareInfo.Smart;
 
 foreach (var storage in StorageInformation.GetInformation())
 {

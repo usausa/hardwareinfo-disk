@@ -1,13 +1,10 @@
 namespace HardwareInfo.Smart;
 
-using Microsoft.Win32.SafeHandles;
-
-using System.Diagnostics;
 using System.Globalization;
 using System.Management;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
-using System.Text;
+
+using Microsoft.Win32.SafeHandles;
 
 public static class StorageInformation
 {
@@ -48,17 +45,7 @@ public static class StorageInformation
                 continue;
             }
 
-            // Controller
-            var data = new Kernel32.NVME_IDENTIFY_CONTROLLER_DATA();
-            if (!IdentifyController(handle, out data))
-            {
-                continue;
-            }
-
-            var nvmeInfo = new NVMeInfo(info.Index, data);
-
-            var log = new Kernel32.NVME_HEALTH_INFO_LOG();
-            if (!HealthInfoLog(handle, out log))
+            if (!HealthInfoLog(handle, out var log))
             {
                 continue;
             }
@@ -69,17 +56,19 @@ public static class StorageInformation
             storages.Add(storage);
 
             Console.WriteLine(storage.Model);
-            Console.WriteLine($"  Size            : {storage.Size}");
-            Console.WriteLine($"  Status          : {storage.Status}");
+            Console.WriteLine($"  Size                   : {storage.Size}");
+            Console.WriteLine($"  Status                 : {storage.Status}");
 
-            Console.WriteLine($"  DataUnitRead    : {health.DataUnitRead}");
-            Console.WriteLine($"  DataUnitWritten : {health.DataUnitWritten}");
-            Console.WriteLine($"  AvailableSpare  : {health.AvailableSpare}");
-            Console.WriteLine($"  PercentageUsed  : {health.PercentageUsed}");
-            Console.WriteLine($"  PowerCycle      : {health.PowerCycle}");
-            Console.WriteLine($"  PowerOnHours    : {health.PowerOnHours}");
-            Console.WriteLine($"  Temperature     : {health.Temperature}");
-            Console.WriteLine($"  UnsafeShutdowns : {health.UnsafeShutdowns}");
+            Console.WriteLine($"  DataUnitRead           : {health.DataUnitRead}");
+            Console.WriteLine($"  DataUnitWritten        : {health.DataUnitWritten}");
+            Console.WriteLine($"  AvailableSpare         : {health.AvailableSpare}");
+            Console.WriteLine($"  PercentageUsed         : {health.PercentageUsed}");
+            Console.WriteLine($"  PowerCycle             : {health.PowerCycle}");
+            Console.WriteLine($"  PowerOnHours           : {health.PowerOnHours}");
+            Console.WriteLine($"  Temperature            : {health.Temperature}");
+            Console.WriteLine($"  UnsafeShutdowns        : {health.UnsafeShutdowns}");
+            Console.WriteLine($"  MediaErrors            : {health.MediaErrors}");
+            Console.WriteLine($"  ErrorInfoLogEntryCount : {health.ErrorInfoLogEntryCount}");
         }
 
         return storages.ToArray();
@@ -134,43 +123,6 @@ public static class StorageInformation
         }
     }
 
-    internal static bool IdentifyController(SafeHandle hDevice, out Kernel32.NVME_IDENTIFY_CONTROLLER_DATA data)
-    {
-        data = Kernel32.CreateStruct<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>();
-        if (hDevice?.IsInvalid != false)
-            return false;
-
-        bool result = false;
-        Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
-        nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
-        nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeIdentify;
-        nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)Kernel32.STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE.NVMeIdentifyCnsController;
-        nptwb.ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<Kernel32.STORAGE_PROTOCOL_SPECIFIC_DATA>();
-        nptwb.ProtocolSpecific.ProtocolDataLength = (uint)nptwb.Buffer.Length;
-        nptwb.PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
-        nptwb.QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery;
-
-        int length = Marshal.SizeOf<Kernel32.STORAGE_QUERY_BUFFER>();
-        IntPtr buffer = Marshal.AllocHGlobal(length);
-        Marshal.StructureToPtr(nptwb, buffer, false);
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, IntPtr.Zero);
-        if (validTransfer)
-        {
-            //map NVME_IDENTIFY_CONTROLLER_DATA to nptwb.Buffer
-            IntPtr offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
-            var newPtr = IntPtr.Add(buffer, offset.ToInt32());
-            data = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(newPtr);
-            Marshal.FreeHGlobal(buffer);
-            result = true;
-        }
-        else
-        {
-            Marshal.FreeHGlobal(buffer);
-        }
-
-        return result;
-    }
-
     internal static bool HealthInfoLog(SafeHandle hDevice, out Kernel32.NVME_HEALTH_INFO_LOG data)
     {
         data = Kernel32.CreateStruct<Kernel32.NVME_HEALTH_INFO_LOG>();
@@ -179,8 +131,8 @@ public static class StorageInformation
             return false;
         }
 
-        bool result = false;
-        Kernel32.STORAGE_QUERY_BUFFER nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
+        var result = false;
+        var nptwb = Kernel32.CreateStruct<Kernel32.STORAGE_QUERY_BUFFER>();
         nptwb.ProtocolSpecific.ProtocolType = Kernel32.STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
         nptwb.ProtocolSpecific.DataType = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage;
         nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)Kernel32.NVME_LOG_PAGES.NVME_LOG_PAGE_HEALTH_INFO;
@@ -189,14 +141,13 @@ public static class StorageInformation
         nptwb.PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
         nptwb.QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery;
 
-        int length = Marshal.SizeOf<Kernel32.STORAGE_QUERY_BUFFER>();
-        IntPtr buffer = Marshal.AllocHGlobal(length);
+        var length = Marshal.SizeOf<Kernel32.STORAGE_QUERY_BUFFER>();
+        var buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(nptwb, buffer, false);
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, IntPtr.Zero);
+        var validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, IntPtr.Zero);
         if (validTransfer)
         {
-            //map NVME_HEALTH_INFO_LOG to nptwb.Buffer
-            IntPtr offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
+            var offset = Marshal.OffsetOf<Kernel32.STORAGE_QUERY_BUFFER>(nameof(Kernel32.STORAGE_QUERY_BUFFER.Buffer));
             var newPtr = IntPtr.Add(buffer, offset.ToInt32());
             data = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
             Marshal.FreeHGlobal(buffer);
@@ -282,51 +233,6 @@ internal class StorageInfo
     }
 }
 
-public class NVMeInfo
-{
-    public ushort ControllerId { get; protected set; }
-
-    public byte[] IEEE { get; protected set; }
-
-    public int Index { get; protected set; }
-
-    public string Model { get; protected set; }
-
-    public uint NumberNamespaces { get; protected set; }
-
-    public string Revision { get; protected set; }
-
-    public string Serial { get; protected set; }
-
-    public ushort SSVID { get; protected set; }
-
-    public ulong TotalCapacity { get; protected set; }
-
-    public ulong UnallocatedCapacity { get; protected set; }
-
-    public ushort VID { get; protected set; }
-
-    internal NVMeInfo(int index, Kernel32.NVME_IDENTIFY_CONTROLLER_DATA data)
-    {
-        Index = index;
-        VID = data.VID;
-        SSVID = data.SSVID;
-        Serial = GetString(data.SN);
-        Model = GetString(data.MN);
-        Revision = GetString(data.FR);
-        IEEE = data.IEEE;
-        TotalCapacity = BitConverter.ToUInt64(data.TNVMCAP, 0); // 128bit little endian
-        UnallocatedCapacity = BitConverter.ToUInt64(data.UNVMCAP, 0);
-        ControllerId = data.CNTLID;
-        NumberNamespaces = data.NN;
-    }
-
-    private static string GetString(byte[] s)
-    {
-        return Encoding.ASCII.GetString(s).Trim('\t', '\n', '\r', ' ', '\0');
-    }
-}
-
 public class NVMeHealthInfo
 {
     public byte AvailableSpare { get; protected set; }
@@ -386,7 +292,7 @@ public class NVMeHealthInfo
         CriticalCompositeTemperatureTime = log.CriticalCompositeTemperatureTime;
 
         TemperatureSensors = new short[log.TemperatureSensor.Length];
-        for (int i = 0; i < TemperatureSensors.Length; i++)
+        for (var i = 0; i < TemperatureSensors.Length; i++)
             TemperatureSensors[i] = KelvinToCelsius(log.TemperatureSensor[i]);
     }
 

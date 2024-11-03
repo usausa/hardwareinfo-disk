@@ -1,6 +1,23 @@
 namespace HardwareInfo.Disk;
 
-internal sealed class SmartGeneric : ISmartGeneric
+using Microsoft.Win32.SafeHandles;
+
+// TODO
+#pragma warning disable CA1812
+#pragma warning disable CA1822
+internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 {
-    public void Update() => throw new NotImplementedException();
+    private readonly SafeFileHandle handle;
+
+    public SmartGeneric(SafeFileHandle handle)
+    {
+        this.handle = handle;
+    }
+
+    public void Dispose()
+    {
+        handle.Dispose();
+    }
+
+    public bool Update() => throw new NotImplementedException();
 }

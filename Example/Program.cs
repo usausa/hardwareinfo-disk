@@ -1,6 +1,6 @@
-using HardwareInfo.Smart;
+using HardwareInfo.Disk;
 
-foreach (var storage in StorageInformation.GetInformation())
+foreach (var storage in DiskInfo.GetInformation())
 {
     //Console.WriteLine(storage.DeviceId);
 }

@@ -1,4 +1,4 @@
-namespace HardwareInfo.Smart;
+namespace HardwareInfo.Disk;
 
 using System.Runtime.InteropServices;
 

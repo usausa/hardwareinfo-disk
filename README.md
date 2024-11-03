@@ -1,1 +1,1 @@
-# hardwareinfo-smart
+# hardwareinfo-disk

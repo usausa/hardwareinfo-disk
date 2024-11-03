@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <CodeAnalysisRuleSet>..\Analyzers.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>HardwareInfo.Smart</PackageId>
-    <Title>HardwareInfo.Smart</Title>
-    <Description>HardwareInfo.Smart.</Description>
+    <PackageId>HardwareInfo.Disk</PackageId>
+    <Title>HardwareInfo.Disk</Title>
+    <Description>HardwareInfo.Disk.</Description>
     <PackageTags>hardware storage</PackageTags>
   </PropertyGroup>
 

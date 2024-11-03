@@ -1,12 +1,14 @@
-namespace HardwareInfo.Smart;
+namespace HardwareInfo.Disk;
 
 using System.Globalization;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 using Microsoft.Win32.SafeHandles;
 
-public static class StorageInformation
+[SupportedOSPlatform("windows")]
+public static class DiskInfo
 {
     public static IStorage[] GetInformation()
     {
@@ -27,48 +29,75 @@ public static class StorageInformation
             storage.SerialNumber = (string)drive.Properties["SerialNumber"].Value;
             storage.FirmwareRevision = (string)drive.Properties["FirmwareRevision"].Value;
 
+            Console.WriteLine(storage.Model);
+            foreach (var property in drive.Properties)
+            {
+                Console.WriteLine($"  {property.Name} = {property.Value}");
+            }
+            Console.WriteLine();
+
             var info = GetStorageInfo(storage.DeviceId, storage.Index);
             if (info is null)
             {
                 continue;
             }
 
-            // TODO Ata
-            if (info.BusType != Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
+            // NVMe
+            if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
             {
-                continue;
+                using var handle = Kernel32.OpenDevice(storage.DeviceId);
+                if (handle is null)
+                {
+                    continue;
+                }
+
+                if (HealthInfoLog(handle, out var log))
+                {
+                    var health = new NVMeHealthInfo(log);
+
+                    storages.Add(storage);
+
+                    Console.WriteLine(storage.Model);
+                    Console.WriteLine($"  Size                   : {storage.Size}");
+                    Console.WriteLine($"  Status                 : {storage.Status}");
+
+                    Console.WriteLine($"  DataUnitRead           : {health.DataUnitRead}");
+                    Console.WriteLine($"  DataUnitWritten        : {health.DataUnitWritten}");
+                    Console.WriteLine($"  AvailableSpare         : {health.AvailableSpare}");
+                    Console.WriteLine($"  PercentageUsed         : {health.PercentageUsed}");
+                    Console.WriteLine($"  PowerCycle             : {health.PowerCycle}");
+                    Console.WriteLine($"  PowerOnHours           : {health.PowerOnHours}");
+                    Console.WriteLine($"  Temperature            : {health.Temperature}");
+                    Console.WriteLine($"  UnsafeShutdowns        : {health.UnsafeShutdowns}");
+                    Console.WriteLine($"  MediaErrors            : {health.MediaErrors}");
+                    Console.WriteLine($"  ErrorInfoLogEntryCount : {health.ErrorInfoLogEntryCount}");
+
+                    continue;
+                }
             }
 
-            using var handle = Kernel32.OpenDevice(storage.DeviceId);
-            if (handle is null)
+            // ATA
+            if (info.BusType is
+                Kernel32.STORAGE_BUS_TYPE.BusTypeAta or
+                Kernel32.STORAGE_BUS_TYPE.BusTypeSata or
+                Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
             {
-                continue;
+                using var handle = Kernel32.OpenDevice(storage.DeviceId);
+                if (handle is null)
+                {
+                    continue;
+                }
+
+                // TODO
+                if (true)
+                {
+
+
+                    continue;
+                }
             }
 
-            if (!HealthInfoLog(handle, out var log))
-            {
-                continue;
-            }
-
-            var health = new NVMeHealthInfo(log);
-
-            // TODO
-            storages.Add(storage);
-
-            Console.WriteLine(storage.Model);
-            Console.WriteLine($"  Size                   : {storage.Size}");
-            Console.WriteLine($"  Status                 : {storage.Status}");
-
-            Console.WriteLine($"  DataUnitRead           : {health.DataUnitRead}");
-            Console.WriteLine($"  DataUnitWritten        : {health.DataUnitWritten}");
-            Console.WriteLine($"  AvailableSpare         : {health.AvailableSpare}");
-            Console.WriteLine($"  PercentageUsed         : {health.PercentageUsed}");
-            Console.WriteLine($"  PowerCycle             : {health.PowerCycle}");
-            Console.WriteLine($"  PowerOnHours           : {health.PowerOnHours}");
-            Console.WriteLine($"  Temperature            : {health.Temperature}");
-            Console.WriteLine($"  UnsafeShutdowns        : {health.UnsafeShutdowns}");
-            Console.WriteLine($"  MediaErrors            : {health.MediaErrors}");
-            Console.WriteLine($"  ErrorInfoLogEntryCount : {health.ErrorInfoLogEntryCount}");
+            Console.WriteLine($"{storage.Model} is unsupported. bysType=[{info.BusType}]");
         }
 
         return storages.ToArray();

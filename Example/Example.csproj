@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HardwareInfo.Smart\HardwareInfo.Smart.csproj" />
+    <ProjectReference Include="..\HardwareInfo.Disk\HardwareInfo.Disk.csproj" />
   </ItemGroup>
 
 </Project>

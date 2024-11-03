@@ -6,10 +6,9 @@ foreach (var disk in DiskInfo.GetInformation())
     {
         Console.WriteLine(disk.Model);
         Console.WriteLine($"  Size                   : {disk.Size}");
-        Console.WriteLine($"  Status                 : {disk.Status}");
         var smart = (ISmartNvme)disk.Smart;
-        Console.WriteLine($"  DataUnitRead           : {smart.DataUnitRead}");
-        Console.WriteLine($"  DataUnitWritten        : {smart.DataUnitWritten}");
+        Console.WriteLine($"  DataUnitRead           : {smart.DataUnitRead * 512 * 1000 / 1024 / 1024 / 1024}");
+        Console.WriteLine($"  DataUnitWritten        : {smart.DataUnitWritten * 512 * 1000 / 1024 / 1024 / 1024}");
         Console.WriteLine($"  AvailableSpare         : {smart.AvailableSpare}");
         Console.WriteLine($"  PercentageUsed         : {smart.PercentageUsed}");
         Console.WriteLine($"  PowerCycle             : {smart.PowerCycle}");

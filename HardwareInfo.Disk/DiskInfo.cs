@@ -96,7 +96,7 @@ public static class DiskInfo
 
     private sealed record StorageDescriptor(STORAGE_BUS_TYPE BusType, bool Removable);
 
-    private static StorageDescriptor? GetStorageDescriptor(string devicePath)
+    private static unsafe StorageDescriptor? GetStorageDescriptor(string devicePath)
     {
         using var handle = OpenDevice(devicePath);
         if (handle.IsInvalid)
@@ -123,10 +123,8 @@ public static class DiskInfo
                 return null;
             }
 
-            var descriptor = Marshal.PtrToStructure<STORAGE_DEVICE_DESCRIPTOR>(ptr);
-            var rawData = new byte[descriptor.Size];
-            Marshal.Copy(ptr, rawData, 0, rawData.Length);
-            return new StorageDescriptor(descriptor.BusType, descriptor.RemovableMedia);
+            var descriptor = (STORAGE_DEVICE_DESCRIPTOR*)ptr;
+            return new StorageDescriptor(descriptor->BusType, descriptor->RemovableMedia);
         }
         finally
         {

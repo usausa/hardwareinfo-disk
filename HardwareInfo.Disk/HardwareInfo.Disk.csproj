@@ -10,7 +10,7 @@
     <PackageId>HardwareInfo.Disk</PackageId>
     <Title>HardwareInfo.Disk</Title>
     <Description>HardwareInfo.Disk.</Description>
-    <PackageTags>hardware storage</PackageTags>
+    <PackageTags>hardware disk smart</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

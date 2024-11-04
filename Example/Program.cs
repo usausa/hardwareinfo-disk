@@ -44,7 +44,7 @@ static void ShowValue<TResult>(ISmartGeneric smart, SmartId id, Func<ulong, TRes
     var attr = smart.GetAttribute(id);
     if (attr.HasValue)
     {
-        Console.WriteLine($"  {id.ToString(),-36} : {converter(attr.Value.RawValue)}");
+        Console.WriteLine($"  {id,-36} : {converter(attr.Value.RawValue)}");
     }
 }
 

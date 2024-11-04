@@ -9,9 +9,13 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 {
     private readonly SafeFileHandle handle;
 
+    public bool LastUpdate { get; }
+
     public SmartGeneric(SafeFileHandle handle)
     {
         this.handle = handle;
+        // TODO
+        LastUpdate = false;
     }
 
     public void Dispose()

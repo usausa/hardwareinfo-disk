@@ -18,6 +18,8 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     private IntPtr buffer;
 
+    public bool LastUpdate { get; private set; }
+
     public byte AvailableSpare { get; set; }
 
     public byte AvailableSpareThreshold { get; set; }
@@ -76,6 +78,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
     {
         if (handle.IsClosed)
         {
+            LastUpdate = false;
             return false;
         }
 
@@ -94,6 +97,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
         if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, IntPtr.Zero))
         {
+            LastUpdate = false;
             return false;
         }
 
@@ -124,6 +128,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
             TemperatureSensors[i] = KelvinToCelsius(log.TemperatureSensor[i]);
         }
 
+        LastUpdate = true;
         return true;
     }
 #pragma warning restore CS8500

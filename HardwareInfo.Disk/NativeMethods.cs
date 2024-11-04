@@ -68,6 +68,14 @@ internal static class NativeMethods
         StorageDeviceProtocolSpecificPropertyEx
     }
 
+    public enum STORAGE_QUERY_TYPE
+    {
+        PropertyStandardQuery = 0,
+        PropertyExistsQuery,
+        PropertyMaskQuery,
+        PropertyQueryMaxDefined
+    }
+
     public enum STORAGE_BUS_TYPE
     {
         BusTypeUnknown = 0x00,
@@ -91,14 +99,6 @@ internal static class NativeMethods
         BusTypeSCM,
         BusTypeMax,
         BusTypeMaxReserved = 0x7F
-    }
-
-    public enum STORAGE_QUERY_TYPE
-    {
-        PropertyStandardQuery = 0,
-        PropertyExistsQuery,
-        PropertyMaskQuery,
-        PropertyQueryMaxDefined
     }
 
     public enum STORAGE_PROTOCOL_TYPE
@@ -139,13 +139,11 @@ internal static class NativeMethods
     //------------------------------------------------------------------------
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct STORAGE_PROPERTY_QUERY
+    public unsafe struct STORAGE_PROPERTY_QUERY
     {
         public STORAGE_PROPERTY_ID PropertyId;
         public STORAGE_QUERY_TYPE QueryType;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] AdditionalParameters;
+        public fixed byte AdditionalParameters[1];
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -190,53 +188,37 @@ internal static class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct STORAGE_QUERY_BUFFER
+    public unsafe struct STORAGE_QUERY_BUFFER
     {
         public STORAGE_PROPERTY_ID PropertyId;
         public STORAGE_QUERY_TYPE QueryType;
         public STORAGE_PROTOCOL_SPECIFIC_DATA ProtocolSpecific;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096)]
-        public byte[] Buffer;
+        public fixed byte Buffer[4096];
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct NVME_HEALTH_INFO_LOG
+    public unsafe struct NVME_HEALTH_INFO_LOG
     {
         public byte CriticalWarning;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public byte[] CompositeTemp;
+        public fixed byte CompositeTemp[2];
         public byte AvailableSpare;
         public byte AvailableSpareThreshold;
         public byte PercentageUsed;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 26)]
-        public byte[] Reserved1;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] DataUnitRead;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] DataUnitWritten;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] HostReadCommands;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] HostWriteCommands;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] ControllerBusyTime;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] PowerCycles;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] PowerOnHours;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] UnsafeShutdowns;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] MediaAndDataIntegrityErrors;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] NumberErrorInformationLogEntries;
+        public fixed byte Reserved1[26];
+        public fixed byte DataUnitRead[16];
+        public fixed byte DataUnitWritten[16];
+        public fixed byte HostReadCommands[16];
+        public fixed byte HostWriteCommands[16];
+        public fixed byte ControllerBusyTime[16];
+        public fixed byte PowerCycles[16];
+        public fixed byte PowerOnHours[16];
+        public fixed byte UnsafeShutdowns[16];
+        public fixed byte MediaAndDataIntegrityErrors[16];
+        public fixed byte NumberErrorInformationLogEntries[16];
         public uint WarningCompositeTemperatureTime;
         public uint CriticalCompositeTemperatureTime;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        public ushort[] TemperatureSensor;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 296)]
-        public byte[] Reserved2;
+        public fixed ushort TemperatureSensor[8];
+        public fixed byte Reserved2[296];
     }
 
     //------------------------------------------------------------------------

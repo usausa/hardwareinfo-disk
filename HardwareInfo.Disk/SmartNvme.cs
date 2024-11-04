@@ -50,7 +50,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     public short Temperature { get; set; }
 
-    public short[] TemperatureSensors { get; set; } = [];
+    public short[] TemperatureSensors { get; set; } = new short[8];
 
     public ulong UnsafeShutdowns { get; set; }
 
@@ -85,15 +85,14 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         var span = new Span<byte>(buffer.ToPointer(), length);
         span.Clear();
 
-        var query = Marshal.PtrToStructure<STORAGE_QUERY_BUFFER>(buffer);
-        query.ProtocolSpecific.ProtocolType = STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
-        query.ProtocolSpecific.DataType = (uint)STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage;
-        query.ProtocolSpecific.ProtocolDataRequestValue = (uint)NVME_LOG_PAGES.NVME_LOG_PAGE_HEALTH_INFO;
-        query.ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<STORAGE_PROTOCOL_SPECIFIC_DATA>();
-        query.ProtocolSpecific.ProtocolDataLength = (uint)query.Buffer.Length;
-        query.PropertyId = STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
-        query.QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery;
-        Marshal.StructureToPtr(query, buffer, false);
+        var query = (STORAGE_QUERY_BUFFER*)buffer;
+        query->ProtocolSpecific.ProtocolType = STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
+        query->ProtocolSpecific.DataType = (uint)STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage;
+        query->ProtocolSpecific.ProtocolDataRequestValue = (uint)NVME_LOG_PAGES.NVME_LOG_PAGE_HEALTH_INFO;
+        query->ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<STORAGE_PROTOCOL_SPECIFIC_DATA>();
+        query->ProtocolSpecific.ProtocolDataLength = 4096;
+        query->PropertyId = STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
+        query->QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery;
 
         if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, IntPtr.Zero))
         {
@@ -101,31 +100,28 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
             return false;
         }
 
-        var log = Marshal.PtrToStructure<NVME_HEALTH_INFO_LOG>(IntPtr.Add(buffer, QueryBufferOffset));
-        CriticalWarning = log.CriticalWarning;
-        Temperature = KelvinToCelsius(log.CompositeTemp);
-        AvailableSpare = log.AvailableSpare;
-        AvailableSpareThreshold = log.AvailableSpareThreshold;
-        PercentageUsed = log.PercentageUsed;
-        DataUnitRead = BitConverter.ToUInt64(log.DataUnitRead, 0);
-        DataUnitWritten = BitConverter.ToUInt64(log.DataUnitWritten, 0);
-        HostReadCommands = BitConverter.ToUInt64(log.HostReadCommands, 0);
-        HostWriteCommands = BitConverter.ToUInt64(log.HostWriteCommands, 0);
-        ControllerBusyTime = BitConverter.ToUInt64(log.ControllerBusyTime, 0);
-        PowerCycle = BitConverter.ToUInt64(log.PowerCycles, 0);
-        PowerOnHours = BitConverter.ToUInt64(log.PowerOnHours, 0);
-        UnsafeShutdowns = BitConverter.ToUInt64(log.UnsafeShutdowns, 0);
-        MediaErrors = BitConverter.ToUInt64(log.MediaAndDataIntegrityErrors, 0);
-        ErrorInfoLogEntryCount = BitConverter.ToUInt64(log.NumberErrorInformationLogEntries, 0);
-        WarningCompositeTemperatureTime = log.WarningCompositeTemperatureTime;
-        CriticalCompositeTemperatureTime = log.CriticalCompositeTemperatureTime;
-        if (TemperatureSensors.Length != log.TemperatureSensor.Length)
-        {
-            TemperatureSensors = new short[log.TemperatureSensor.Length];
-        }
+        var log = (NVME_HEALTH_INFO_LOG*)IntPtr.Add(buffer, QueryBufferOffset);
+        CriticalWarning = log->CriticalWarning;
+        Temperature = KelvinToCelsius(*(ushort*)log->CompositeTemp);
+        AvailableSpare = log->AvailableSpare;
+        AvailableSpareThreshold = log->AvailableSpareThreshold;
+        PercentageUsed = log->PercentageUsed;
+        DataUnitRead = *(ulong*)log->DataUnitRead;
+        DataUnitWritten = *(ulong*)log->DataUnitWritten;
+        HostReadCommands = *(ulong*)log->HostReadCommands;
+        HostWriteCommands = *(ulong*)log->HostWriteCommands;
+        ControllerBusyTime = *(ulong*)log->ControllerBusyTime;
+        PowerCycle = *((ulong*)log->PowerCycles);
+        PowerCycle = *(ulong*)log->PowerCycles;
+        PowerOnHours = *(ulong*)log->PowerOnHours;
+        UnsafeShutdowns = *(ulong*)log->UnsafeShutdowns;
+        MediaErrors = *(ulong*)log->MediaAndDataIntegrityErrors;
+        ErrorInfoLogEntryCount = *(ulong*)log->NumberErrorInformationLogEntries;
+        WarningCompositeTemperatureTime = log->WarningCompositeTemperatureTime;
+        CriticalCompositeTemperatureTime = log->CriticalCompositeTemperatureTime;
         for (var i = 0; i < TemperatureSensors.Length; i++)
         {
-            TemperatureSensors[i] = KelvinToCelsius(log.TemperatureSensor[i]);
+            TemperatureSensors[i] = KelvinToCelsius(log->TemperatureSensor[i]);
         }
 
         LastUpdate = true;

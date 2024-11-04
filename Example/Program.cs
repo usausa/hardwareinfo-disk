@@ -1,5 +1,6 @@
 using HardwareInfo.Disk;
 
+#pragma warning disable CA1416
 foreach (var disk in DiskInfo.GetInformation())
 {
     if (disk.DiskType == DiskType.Nvme)

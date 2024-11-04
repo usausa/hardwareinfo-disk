@@ -9,12 +9,11 @@ using static HardwareInfo.Disk.NativeMethods;
 
 internal sealed class SmartNvme : ISmartNvme, IDisposable
 {
-    private static readonly int QueryBufferOffset =
-        Marshal.OffsetOf<STORAGE_QUERY_BUFFER>(nameof(STORAGE_QUERY_BUFFER.Buffer)).ToInt32();
+    private static readonly int BufferSize = Marshal.SizeOf<STORAGE_QUERY_BUFFER>();
+
+    private static readonly int QueryBufferOffset = Marshal.OffsetOf<STORAGE_QUERY_BUFFER>(nameof(STORAGE_QUERY_BUFFER.Buffer)).ToInt32();
 
     private readonly SafeFileHandle handle;
-
-    private readonly int length;
 
     private IntPtr buffer;
 
@@ -59,8 +58,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
     public SmartNvme(SafeFileHandle handle)
     {
         this.handle = handle;
-        length = Marshal.SizeOf<STORAGE_QUERY_BUFFER>();
-        buffer = Marshal.AllocHGlobal(length);
+        buffer = Marshal.AllocHGlobal(BufferSize);
     }
 
     public void Dispose()
@@ -73,7 +71,6 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         }
     }
 
-#pragma warning disable CS8500
     public unsafe bool Update()
     {
         if (handle.IsClosed)
@@ -82,7 +79,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
             return false;
         }
 
-        var span = new Span<byte>(buffer.ToPointer(), length);
+        var span = new Span<byte>(buffer.ToPointer(), BufferSize);
         span.Clear();
 
         var query = (STORAGE_QUERY_BUFFER*)buffer;
@@ -90,11 +87,11 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         query->ProtocolSpecific.DataType = (uint)STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage;
         query->ProtocolSpecific.ProtocolDataRequestValue = (uint)NVME_LOG_PAGES.NVME_LOG_PAGE_HEALTH_INFO;
         query->ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<STORAGE_PROTOCOL_SPECIFIC_DATA>();
-        query->ProtocolSpecific.ProtocolDataLength = 4096;
+        query->ProtocolSpecific.ProtocolDataLength = (uint)(BufferSize - QueryBufferOffset);
         query->PropertyId = STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
         query->QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery;
 
-        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, IntPtr.Zero))
+        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, buffer, BufferSize, buffer, BufferSize, out _, IntPtr.Zero))
         {
             LastUpdate = false;
             return false;
@@ -111,7 +108,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         HostReadCommands = *(ulong*)log->HostReadCommands;
         HostWriteCommands = *(ulong*)log->HostWriteCommands;
         ControllerBusyTime = *(ulong*)log->ControllerBusyTime;
-        PowerCycle = *((ulong*)log->PowerCycles);
+        PowerCycle = *(ulong*)log->PowerCycles;
         PowerCycle = *(ulong*)log->PowerCycles;
         PowerOnHours = *(ulong*)log->PowerOnHours;
         UnsafeShutdowns = *(ulong*)log->UnsafeShutdowns;
@@ -127,5 +124,4 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         LastUpdate = true;
         return true;
     }
-#pragma warning restore CS8500
 }

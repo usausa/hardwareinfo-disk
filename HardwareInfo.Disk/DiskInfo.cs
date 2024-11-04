@@ -36,25 +36,33 @@ public static class DiskInfo
             var descriptor = GetStorageDescriptor(info.DeviceId);
             if (descriptor is null)
             {
-                info.DiskType = DiskType.Unsupported;
+                info.SmartType = SmartType.Unsupported;
                 info.Smart = SmartUnsupported.Default;
                 continue;
             }
 
+            info.BusType = (BusType)descriptor.BusType;
             info.Removable = descriptor.Removable;
 
             // NVMe
-            if (descriptor.BusType == STORAGE_BUS_TYPE.BusTypeNvme)
+            if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeNvme)
             {
-                info.DiskType = DiskType.Nvme;
+                info.SmartType = SmartType.Nvme;
                 info.Smart = new SmartNvme(OpenDevice(info.DeviceId));
                 info.Smart.Update();
                 continue;
             }
 
-            // TODO ATA
+            // ATA
+            if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata)
+            {
+                info.SmartType = SmartType.Generic;
+                info.Smart = new SmartGeneric(OpenDevice(info.DeviceId), info.Index);
+                info.Smart.Update();
+                continue;
+            }
 
-            info.DiskType = DiskType.Unsupported;
+            info.SmartType = SmartType.Unsupported;
             info.Smart = SmartUnsupported.Default;
         }
 
@@ -83,7 +91,10 @@ public static class DiskInfo
             PropertyId = STORAGE_PROPERTY_ID.StorageDeviceProperty,
             QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery
         };
-        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), out var header, Marshal.SizeOf<STORAGE_DEVICE_DESCRIPTOR_HEADER>(), out _, IntPtr.Zero))
+#pragma warning disable SA1129
+        var header = new STORAGE_DEVICE_DESCRIPTOR_HEADER();
+#pragma warning restore SA1129
+        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), ref header, Marshal.SizeOf<STORAGE_DEVICE_DESCRIPTOR_HEADER>(), out _, IntPtr.Zero))
         {
             return null;
         }

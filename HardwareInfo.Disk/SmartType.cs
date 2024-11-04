@@ -1,8 +1,8 @@
 namespace HardwareInfo.Disk;
 
-public enum DiskType
+public enum SmartType
 {
     Unsupported,
-    Nvme,
-    Ata
+    Generic,
+    Nvme
 }

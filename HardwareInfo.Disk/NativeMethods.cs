@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 
 using Microsoft.Win32.SafeHandles;
 
+// ReSharper disable CommentTypo
 // ReSharper disable IdentifierTypo
 // ReSharper disable InconsistentNaming
 internal static class NativeMethods
@@ -12,15 +13,20 @@ internal static class NativeMethods
     // Const
     //------------------------------------------------------------------------
 
-    public const uint IOCTL_SCSI_PASS_THROUGH = 0x04d004;
-    public const uint IOCTL_SCSI_MINIPORT = 0x04d008;
-    public const uint IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x04d014;
-    public const uint IOCTL_SCSI_GET_ADDRESS = 0x41018;
-    public const uint IOCTL_DISK_PERFORMANCE = 0x70020;
+    public const int MAX_DRIVE_ATTRIBUTES = 512;
+
+    //public const uint IOCTL_SCSI_PASS_THROUGH = 0x04d004;
+    //public const uint IOCTL_SCSI_MINIPORT = 0x04d008;
+    //public const uint IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x04d014;
+    //public const uint IOCTL_SCSI_GET_ADDRESS = 0x41018;
+    //public const uint IOCTL_DISK_PERFORMANCE = 0x70020;
     public const uint IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400;
-    public const uint IOCTL_BATTERY_QUERY_TAG = 0x294040;
-    public const uint IOCTL_BATTERY_QUERY_INFORMATION = 0x294044;
-    public const uint IOCTL_BATTERY_QUERY_STATUS = 0x29404C;
+
+    public const uint DFP_SEND_DRIVE_COMMAND = 0x0007c084;
+    public const uint DFP_RECEIVE_DRIVE_DATA = 0x0007c088;
+
+    internal const byte SMART_LBA_HI = 0xC2;
+    internal const byte SMART_LBA_MID = 0x4F;
 
     //------------------------------------------------------------------------
     // Enum
@@ -134,6 +140,28 @@ internal static class NativeMethods
         NVME_LOG_PAGE_SANITIZE_STATUS = 0x81
     }
 
+    internal enum SMART_FEATURES : byte
+    {
+        SMART_READ_DATA = 0xD0,
+        READ_THRESHOLDS = 0xD1,
+        ENABLE_DISABLE_AUTOSAVE = 0xD2,
+        SAVE_ATTRIBUTE_VALUES = 0xD3,
+        EXECUTE_OFFLINE_DIAGS = 0xD4,
+        SMART_READ_LOG = 0xD5,
+        SMART_WRITE_LOG = 0xD6,
+        WRITE_THRESHOLDS = 0xD7,
+        ENABLE_SMART = 0xD8,
+        DISABLE_SMART = 0xD9,
+        RETURN_SMART_STATUS = 0xDA,
+        ENABLE_DISABLE_AUTO_OFFLINE = 0xDB /* obsolete */
+    }
+
+    internal enum ATA_COMMAND : byte
+    {
+        ATA_SMART = 0xB0,
+        ATA_IDENTIFY_DEVICE = 0xEC
+    }
+
     //------------------------------------------------------------------------
     // Struct
     //------------------------------------------------------------------------
@@ -221,6 +249,67 @@ internal static class NativeMethods
         public fixed byte Reserved2[296];
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    internal struct IDEREGS
+    {
+        public SMART_FEATURES bFeaturesReg;
+        public byte bSectorCountReg;
+        public byte bSectorNumberReg;
+        public byte bCylLowReg;
+        public byte bCylHighReg;
+        public byte bDriveHeadReg;
+        public ATA_COMMAND bCommandReg;
+        public byte bReserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    internal unsafe struct SENDCMDINPARAMS
+    {
+        public uint cBufferSize;
+        public IDEREGS irDriveRegs;
+        public byte bDriveNumber;
+        public fixed byte bReserved[3];
+        public fixed uint dwReserved[4];
+        public fixed byte bBuffer[1];
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    internal unsafe struct DRIVERSTATUS
+    {
+        public byte bDriverError;
+        public byte bIDEError;
+        public fixed byte Reserved[10];
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    internal unsafe struct SENDCMDOUTPARAMS
+    {
+        public uint cBufferSize;
+        public DRIVERSTATUS DriverStatus;
+        public fixed byte bBuffer[1];
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct SMART_ATTRIBUTE
+    {
+        public byte Id;
+        public short Flags;
+        public byte CurrentValue;
+        public byte WorstValue;
+        public fixed byte RawValue[6];
+        public byte Reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    internal unsafe struct ATTRIBUTECMDOUTPARAMS
+    {
+        public uint cBufferSize;
+        public DRIVERSTATUS DriverStatus;
+        public byte Version;
+        public byte Reserved;
+        public fixed byte Attributes[12 * MAX_DRIVE_ATTRIBUTES];
+    }
+
     //------------------------------------------------------------------------
     // Method
     //------------------------------------------------------------------------
@@ -246,7 +335,7 @@ internal static class NativeMethods
         uint dwIoControlCode,
         ref STORAGE_PROPERTY_QUERY lpInBuffer,
         int nInBufferSize,
-        out STORAGE_DEVICE_DESCRIPTOR_HEADER lpOutBuffer,
+        ref STORAGE_DEVICE_DESCRIPTOR_HEADER lpOutBuffer,
         int nOutBufferSize,
         out uint lpBytesReturned,
         IntPtr lpOverlapped);
@@ -276,6 +365,33 @@ internal static class NativeMethods
         int nOutBufferSize,
         out uint lpBytesReturned,
         IntPtr lpOverlapped);
+
+    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DeviceIoControl(
+        SafeHandle hDevice,
+        uint dwIoControlCode,
+        ref SENDCMDINPARAMS lpInBuffer,
+        int nInBufferSize,
+        ref SENDCMDOUTPARAMS lpOutBuffer,
+        int nOutBufferSize,
+        out uint lpBytesReturned,
+        IntPtr lpOverlapped);
+
+    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DeviceIoControl(
+        SafeHandle hDevice,
+        uint dwIoControlCode,
+        ref SENDCMDINPARAMS lpInBuffer,
+        int nInBufferSize,
+        IntPtr lpOutBuffer,
+        int nOutBufferSize,
+        out uint lpBytesReturned,
+        IntPtr lpOverlapped);
 }
 // ReSharper restore InconsistentNaming
 // ReSharper restore IdentifierTypo
+// ReSharper restore CommentTypo

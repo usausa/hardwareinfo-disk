@@ -2,10 +2,6 @@ namespace HardwareInfo.Disk;
 
 public interface IDiskInfo : IDisposable
 {
-    public DiskType DiskType { get; }
-
-    public ISmart Smart { get; }
-
     public string DeviceId { get; }
 
     public int Index { get; }
@@ -23,4 +19,10 @@ public interface IDiskInfo : IDisposable
     public string FirmwareRevision { get; }
 
     public bool Removable { get; }
+
+    public BusType BusType { get; }
+
+    public SmartType SmartType { get; }
+
+    public ISmart Smart { get; }
 }

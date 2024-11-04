@@ -2,10 +2,6 @@ namespace HardwareInfo.Disk;
 
 internal sealed class DiscInfoGeneric : IDiskInfo
 {
-    public DiskType DiskType { get; set; }
-
-    public ISmart Smart { get; set; } = default!;
-
     public string DeviceId { get; set; } = default!;
 
     public int Index { get; set; }
@@ -23,6 +19,12 @@ internal sealed class DiscInfoGeneric : IDiskInfo
     public string FirmwareRevision { get; set; } = default!;
 
     public bool Removable { get; set; }
+
+    public BusType BusType { get; set; }
+
+    public SmartType SmartType { get; set; }
+
+    public ISmart Smart { get; set; } = default!;
 
     public void Dispose()
     {

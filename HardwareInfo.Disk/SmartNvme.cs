@@ -19,41 +19,41 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     public bool LastUpdate { get; private set; }
 
+    public byte CriticalWarning { get; set; }
+
+    public short Temperature { get; set; }
+
     public byte AvailableSpare { get; set; }
 
     public byte AvailableSpareThreshold { get; set; }
 
-    public ulong ControllerBusyTime { get; set; }
-
-    public uint CriticalCompositeTemperatureTime { get; set; }
-
-    public byte CriticalWarning { get; set; }
+    public byte PercentageUsed { get; set; }
 
     public ulong DataUnitRead { get; set; }
 
     public ulong DataUnitWrite { get; set; }
 
-    public ulong ErrorInfoLogEntry { get; set; }
-
     public ulong HostReadCommand { get; set; }
 
     public ulong HostWriteCommand { get; set; }
 
-    public ulong MediaError { get; set; }
-
-    public byte PercentageUsed { get; set; }
+    public ulong ControllerBusyTime { get; set; }
 
     public ulong PowerCycle { get; set; }
 
     public ulong PowerOnHour { get; set; }
 
-    public short Temperature { get; set; }
-
-    public short[] TemperatureSensors { get; set; } = new short[8];
-
     public ulong UnsafeShutdown { get; set; }
 
+    public ulong MediaError { get; set; }
+
+    public ulong ErrorInfoLogEntry { get; set; }
+
     public uint WarningCompositeTemperatureTime { get; set; }
+
+    public uint CriticalCompositeTemperatureTime { get; set; }
+
+    public short[] TemperatureSensors { get; set; } = new short[8];
 
     public SmartNvme(SafeFileHandle handle)
     {
@@ -108,7 +108,6 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         HostReadCommand = *(ulong*)log->HostReadCommands;
         HostWriteCommand = *(ulong*)log->HostWriteCommands;
         ControllerBusyTime = *(ulong*)log->ControllerBusyTime;
-        PowerCycle = *(ulong*)log->PowerCycles;
         PowerCycle = *(ulong*)log->PowerCycles;
         PowerOnHour = *(ulong*)log->PowerOnHours;
         UnsafeShutdown = *(ulong*)log->UnsafeShutdowns;

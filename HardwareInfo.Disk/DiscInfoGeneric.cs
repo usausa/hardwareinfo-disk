@@ -2,11 +2,9 @@ namespace HardwareInfo.Disk;
 
 internal sealed class DiscInfoGeneric : IDiskInfo
 {
-    public string DeviceId { get; set; } = default!;
-
     public uint Index { get; set; }
 
-    public ulong Size { get; set; }
+    public string DeviceId { get; set; } = default!;
 
     public string PnpDeviceId { get; set; } = default!;
 
@@ -17,6 +15,24 @@ internal sealed class DiscInfoGeneric : IDiskInfo
     public string SerialNumber { get; set; } = default!;
 
     public string FirmwareRevision { get; set; } = default!;
+
+    public ulong Size { get; set; }
+
+    public uint BytesPerSector { get; set; }
+
+    public uint SectorsPerTrack { get; set; }
+
+    public uint TracksPerCylinder { get; set; }
+
+    public uint TotalHeads { get; set; }
+
+    public ulong TotalCylinders { get; set; }
+
+    public ulong TotalTracks { get; set; }
+
+    public ulong TotalSectors { get; set; }
+
+    public uint Partitions { get; set; }
 
     public bool Removable { get; set; }
 

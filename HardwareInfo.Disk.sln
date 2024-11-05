@@ -5,8 +5,6 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HardwareInfo.Disk", "HardwareInfo.Disk\HardwareInfo.Disk.csproj", "{EB9401A1-71F2-44A7-B2B4-E9ED52249076}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example", "Example\Example.csproj", "{3056C026-EEF5-47DB-ADB0-C0768C98E50E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{48329FBE-9820-465D-9754-03FBF3557CB2}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -32,10 +30,6 @@ Global
 		{EB9401A1-71F2-44A7-B2B4-E9ED52249076}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB9401A1-71F2-44A7-B2B4-E9ED52249076}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB9401A1-71F2-44A7-B2B4-E9ED52249076}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3056C026-EEF5-47DB-ADB0-C0768C98E50E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3056C026-EEF5-47DB-ADB0-C0768C98E50E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3056C026-EEF5-47DB-ADB0-C0768C98E50E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3056C026-EEF5-47DB-ADB0-C0768C98E50E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3FB60D28-BE9C-48DA-A633-41D22FE25630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3FB60D28-BE9C-48DA-A633-41D22FE25630}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FB60D28-BE9C-48DA-A633-41D22FE25630}.Release|Any CPU.ActiveCfg = Release|Any CPU

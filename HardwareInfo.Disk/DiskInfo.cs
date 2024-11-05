@@ -1,5 +1,6 @@
 namespace HardwareInfo.Disk;
 
+using System.Diagnostics;
 using System.Globalization;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -12,7 +13,7 @@ using static HardwareInfo.Disk.NativeMethods;
 [SupportedOSPlatform("windows")]
 public static class DiskInfo
 {
-    public static IDiskInfo[] GetInformation()
+    public static IReadOnlyList<IDiskInfo> GetInformation()
     {
         var list = new List<IDiskInfo>();
 
@@ -21,16 +22,29 @@ public static class DiskInfo
         {
             var info = new DiscInfoGeneric
             {
-                DeviceId = (string)disk.Properties["DeviceID"].Value,
                 Index = Convert.ToUInt32(disk.Properties["Index"].Value, CultureInfo.InvariantCulture),
-                Size = Convert.ToUInt64(disk.Properties["Size"].Value, CultureInfo.InvariantCulture),
+                DeviceId = (string)disk.Properties["DeviceID"].Value,
                 PnpDeviceId = (string)disk.Properties["PNPDeviceID"].Value,
                 Status = (string)disk.Properties["Status"].Value,
                 Model = (string)disk.Properties["Model"].Value,
                 SerialNumber = (string)disk.Properties["SerialNumber"].Value,
-                FirmwareRevision = (string)disk.Properties["FirmwareRevision"].Value
+                FirmwareRevision = (string)disk.Properties["FirmwareRevision"].Value,
+                Size = Convert.ToUInt64(disk.Properties["Size"].Value, CultureInfo.InvariantCulture),
+                BytesPerSector = Convert.ToUInt32(disk.Properties["BytesPerSector"].Value, CultureInfo.InvariantCulture),
+                SectorsPerTrack = Convert.ToUInt32(disk.Properties["SectorsPerTrack"].Value, CultureInfo.InvariantCulture),
+                TracksPerCylinder = Convert.ToUInt32(disk.Properties["TracksPerCylinder"].Value, CultureInfo.InvariantCulture),
+                TotalHeads = Convert.ToUInt32(disk.Properties["TotalHeads"].Value, CultureInfo.InvariantCulture),
+                TotalCylinders = Convert.ToUInt64(disk.Properties["TotalCylinders"].Value, CultureInfo.InvariantCulture),
+                TotalTracks = Convert.ToUInt64(disk.Properties["TotalTracks"].Value, CultureInfo.InvariantCulture),
+                TotalSectors = Convert.ToUInt64(disk.Properties["TotalSectors"].Value, CultureInfo.InvariantCulture),
+                Partitions = Convert.ToUInt32(disk.Properties["Partitions"].Value, CultureInfo.InvariantCulture)
             };
             list.Add(info);
+
+            foreach (var property in disk.Properties)
+            {
+                Debug.WriteLine($"{property.Name} {property.Value?.GetType()} {property.Value}");
+            }
 
             // Get descriptor
             var descriptor = GetStorageDescriptor(info.DeviceId);
@@ -66,8 +80,12 @@ public static class DiskInfo
             info.Smart = SmartUnsupported.Default;
         }
 
-        return [.. list];
+        list.Sort(IndexComparison);
+
+        return list;
     }
+
+    private static int IndexComparison(IDiskInfo x, IDiskInfo y) => (int)x.Index - (int)y.Index;
 
     //------------------------------------------------------------------------
     // Helper

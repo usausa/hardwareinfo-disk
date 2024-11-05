@@ -7,44 +7,63 @@ using System.CommandLine.NamingConventionBinder;
 using HardwareInfo.Disk;
 
 var rootCommand = new RootCommand("DiskInfo tool");
-rootCommand.Handler = CommandHandler.Create(() =>
+rootCommand.Handler = CommandHandler.Create((IConsole console) =>
 {
     foreach (var disk in DiskInfo.GetInformation())
     {
-        Console.WriteLine($"[{disk.Model}]");
-        Console.WriteLine($"BusType: {disk.BusType}");
-        Console.WriteLine($"SmartType: {disk.SmartType}");
+        console.WriteLine($"Disk-{disk.Index}: {disk.Model}");
+        console.WriteLine($"  BusType: {disk.BusType}");
+        console.WriteLine($"  SmartType: {disk.SmartType}");
 
+        console.WriteLine($"  Size: {disk.Size:#,0}");
+        console.WriteLine($"  BytesPerSector: {disk.BytesPerSector:#,0}");
+
+        console.WriteLine("  Partition:");
         foreach (var partition in disk.GetPartitions())
         {
-            Console.WriteLine($"Partition-{partition.Index}: {partition.Name}");
+            console.WriteLine($"    Partition-{partition.Index}: {partition.Name}");
             foreach (var drive in partition.Drives)
             {
                 var used = drive.Size - drive.FreeSpace;
-                Console.WriteLine($"Drive {drive.Name.TrimEnd(':')}: {used:#,0} / {drive.Size:#,0} ({(double)used * 100 / drive.Size:F2}%)");
+                console.WriteLine($"      Drive {drive.Name.TrimEnd(':')}: {used:#,0} / {drive.Size:#,0} ({(double)used * 100 / drive.Size:F2}%)");
             }
         }
 
         if (disk.SmartType == SmartType.Nvme)
         {
             var smart = (ISmartNvme)disk.Smart;
-            Console.WriteLine($"CriticalWarning: {smart.CriticalWarning:X2}");
-            Console.WriteLine($"Temperature: {smart.Temperature}");
-            Console.WriteLine($"AvailableSpare: {smart.AvailableSpare}");
-            Console.WriteLine($"PercentageUsed: {smart.PercentageUsed}");
-            Console.WriteLine($"DataRead: {smart.DataUnitRead * 512 * 1000 / 1024 / 1024 / 1024}");
-            Console.WriteLine($"DataWrite: {smart.DataUnitWrite * 512 * 1000 / 1024 / 1024 / 1024}");
-            Console.WriteLine($"PowerCycle: {smart.PowerCycle}");
-            Console.WriteLine($"PowerOnHour: {smart.PowerOnHour}");
-            Console.WriteLine($"UnsafeShutdown: {smart.UnsafeShutdown}");
-            Console.WriteLine($"MediaError: {smart.MediaError}");
+            console.WriteLine("  SMART:");
+            console.WriteLine($"    CriticalWarning: 0x{smart.CriticalWarning:X2}");
+            console.WriteLine($"    Temperature: {smart.Temperature}");
+            console.WriteLine($"    AvailableSpare: {smart.AvailableSpare}");
+            console.WriteLine($"    AvailableSpareThreshold: {smart.AvailableSpare}");
+            console.WriteLine($"    PercentageUsed: {smart.PercentageUsed}");
+            console.WriteLine($"    DataRead: {smart.DataUnitRead * 512 * 1000 / 1024 / 1024 / 1024}");
+            console.WriteLine($"    DataWrite: {smart.DataUnitWrite * 512 * 1000 / 1024 / 1024 / 1024}");
+            console.WriteLine($"    HostReadCommand: {smart.HostReadCommand}");
+            console.WriteLine($"    HostWriteCommand: {smart.HostWriteCommand}");
+            console.WriteLine($"    ControllerBusyTime: {smart.ControllerBusyTime}");
+            console.WriteLine($"    PowerCycle: {smart.PowerCycle}");
+            console.WriteLine($"    PowerOnHour: {smart.PowerOnHour}");
+            console.WriteLine($"    UnsafeShutdown: {smart.UnsafeShutdown}");
+            console.WriteLine($"    MediaError: {smart.MediaError}");
+            console.WriteLine($"    ErrorInfoLogEntry: {smart.ErrorInfoLogEntry}");
+            console.WriteLine($"    WarningCompositeTemperatureTime: {smart.WarningCompositeTemperatureTime}");
+            console.WriteLine($"    CriticalCompositeTemperatureTime: {smart.CriticalCompositeTemperatureTime}");
+            for (var i = 0; i < smart.TemperatureSensors.Length; i++)
+            {
+                var value = smart.TemperatureSensors[i];
+                if (value > 0)
+                {
+                    console.WriteLine($"    TemperatureSensors-{i}: {value}");
+                }
+            }
         }
         else if (disk.SmartType == SmartType.Generic)
         {
             var smart = (ISmartGeneric)disk.Smart;
-            var ids = smart.GetSupportedIds().ToList();
-            Console.WriteLine($"SupportedIds: {String.Join(",", ids.Select(static x => $"{(byte)x:X2}"))}");
-            foreach (var id in ids)
+            console.WriteLine("  SMART:");
+            foreach (var id in smart.GetSupportedIds())
             {
                 switch (id)
                 {
@@ -57,17 +76,21 @@ rootCommand.Handler = CommandHandler.Create(() =>
                 }
             }
         }
+
+        void ShowValue<TResult>(ISmartGeneric smart, SmartId id, Func<ulong, TResult> converter)
+        {
+            var attr = smart.GetAttribute(id);
+            if (attr.HasValue)
+            {
+                var name = Enum.IsDefined(id) ? $"{(byte)id:X2} {id}" : $"{(byte)id:X2} Undefined";
+                console.WriteLine($"    {name}: {attr.Value.RawValue:X12} {converter(attr.Value.RawValue)}");
+            }
+        }
     }
 });
 
-return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
-
-static void ShowValue<TResult>(ISmartGeneric smart, SmartId id, Func<ulong, TResult> converter)
-{
-    var attr = smart.GetAttribute(id);
-    if (attr.HasValue)
-    {
-        var name = Enum.IsDefined(id) ? $"{(byte)id:X2} {id}" : $"{(byte)id:X2} Undefined";
-        Console.WriteLine($"{name}: {attr.Value.RawValue:X12} {converter(attr.Value.RawValue)}");
-    }
-}
+var result = await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+#if DEBUG
+Console.ReadLine();
+#endif
+return result;

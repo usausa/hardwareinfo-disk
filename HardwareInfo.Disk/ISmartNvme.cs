@@ -15,27 +15,27 @@ public interface ISmartNvme : ISmart
 
     public ulong DataUnitRead { get; }
 
-    public ulong DataUnitWritten { get; }
+    public ulong DataUnitWrite { get; }
 
-    public ulong ErrorInfoLogEntryCount { get; }
+    public ulong ErrorInfoLogEntry { get; }
 
-    public ulong HostReadCommands { get; }
+    public ulong HostReadCommand { get; }
 
-    public ulong HostWriteCommands { get; }
+    public ulong HostWriteCommand { get; }
 
-    public ulong MediaErrors { get; }
+    public ulong MediaError { get; }
 
     public byte PercentageUsed { get; }
 
     public ulong PowerCycle { get; }
 
-    public ulong PowerOnHours { get; }
+    public ulong PowerOnHour { get; }
 
     public short Temperature { get; }
 
     public short[] TemperatureSensors { get; }
 
-    public ulong UnsafeShutdowns { get; }
+    public ulong UnsafeShutdown { get; }
 
     public uint WarningCompositeTemperatureTime { get; }
 }

@@ -31,27 +31,27 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     public ulong DataUnitRead { get; set; }
 
-    public ulong DataUnitWritten { get; set; }
+    public ulong DataUnitWrite { get; set; }
 
-    public ulong ErrorInfoLogEntryCount { get; set; }
+    public ulong ErrorInfoLogEntry { get; set; }
 
-    public ulong HostReadCommands { get; set; }
+    public ulong HostReadCommand { get; set; }
 
-    public ulong HostWriteCommands { get; set; }
+    public ulong HostWriteCommand { get; set; }
 
-    public ulong MediaErrors { get; set; }
+    public ulong MediaError { get; set; }
 
     public byte PercentageUsed { get; set; }
 
     public ulong PowerCycle { get; set; }
 
-    public ulong PowerOnHours { get; set; }
+    public ulong PowerOnHour { get; set; }
 
     public short Temperature { get; set; }
 
     public short[] TemperatureSensors { get; set; } = new short[8];
 
-    public ulong UnsafeShutdowns { get; set; }
+    public ulong UnsafeShutdown { get; set; }
 
     public uint WarningCompositeTemperatureTime { get; set; }
 
@@ -104,16 +104,16 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         AvailableSpareThreshold = log->AvailableSpareThreshold;
         PercentageUsed = log->PercentageUsed;
         DataUnitRead = *(ulong*)log->DataUnitRead;
-        DataUnitWritten = *(ulong*)log->DataUnitWritten;
-        HostReadCommands = *(ulong*)log->HostReadCommands;
-        HostWriteCommands = *(ulong*)log->HostWriteCommands;
+        DataUnitWrite = *(ulong*)log->DataUnitWritten;
+        HostReadCommand = *(ulong*)log->HostReadCommands;
+        HostWriteCommand = *(ulong*)log->HostWriteCommands;
         ControllerBusyTime = *(ulong*)log->ControllerBusyTime;
         PowerCycle = *(ulong*)log->PowerCycles;
         PowerCycle = *(ulong*)log->PowerCycles;
-        PowerOnHours = *(ulong*)log->PowerOnHours;
-        UnsafeShutdowns = *(ulong*)log->UnsafeShutdowns;
-        MediaErrors = *(ulong*)log->MediaAndDataIntegrityErrors;
-        ErrorInfoLogEntryCount = *(ulong*)log->NumberErrorInformationLogEntries;
+        PowerOnHour = *(ulong*)log->PowerOnHours;
+        UnsafeShutdown = *(ulong*)log->UnsafeShutdowns;
+        MediaError = *(ulong*)log->MediaAndDataIntegrityErrors;
+        ErrorInfoLogEntry = *(ulong*)log->NumberErrorInformationLogEntries;
         WarningCompositeTemperatureTime = log->WarningCompositeTemperatureTime;
         CriticalCompositeTemperatureTime = log->CriticalCompositeTemperatureTime;
         for (var i = 0; i < TemperatureSensors.Length; i++)

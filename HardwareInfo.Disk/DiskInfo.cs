@@ -91,9 +91,7 @@ public static class DiskInfo
             PropertyId = STORAGE_PROPERTY_ID.StorageDeviceProperty,
             QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery
         };
-#pragma warning disable SA1129
-        var header = new STORAGE_DEVICE_DESCRIPTOR_HEADER();
-#pragma warning restore SA1129
+        var header = default(STORAGE_DEVICE_DESCRIPTOR_HEADER);
         if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), ref header, Marshal.SizeOf<STORAGE_DEVICE_DESCRIPTOR_HEADER>(), out _, IntPtr.Zero))
         {
             return null;

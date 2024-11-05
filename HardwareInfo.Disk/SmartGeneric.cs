@@ -40,9 +40,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
                 bCommandReg = ATA_COMMAND.ATA_SMART
             }
         };
-#pragma warning disable SA1129
-        var output = new SENDCMDOUTPARAMS();
-#pragma warning restore SA1129
+        var output = default(SENDCMDOUTPARAMS);
         _ = DeviceIoControl(
             handle,
             DFP_SEND_DRIVE_COMMAND,

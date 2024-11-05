@@ -7,6 +7,16 @@ foreach (var disk in DiskInfo.GetInformation())
     Console.WriteLine($"BusType: {disk.BusType}");
     Console.WriteLine($"SmartType: {disk.SmartType}");
 
+    foreach (var partition in disk.GetPartitions())
+    {
+        Console.WriteLine($"Partition-{partition.Index}: {partition.Name}");
+        foreach (var drive in partition.Drives)
+        {
+            var used = drive.Size - drive.FreeSpace;
+            Console.WriteLine($"Drive {drive.Name.TrimEnd(':')}: {used:#,0} / {drive.Size:#,0} ({(double)used * 100 / drive.Size:F2}%)");
+        }
+    }
+
     if (disk.SmartType == SmartType.Nvme)
     {
         var smart = (ISmartNvme)disk.Smart;

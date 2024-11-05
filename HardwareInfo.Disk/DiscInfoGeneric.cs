@@ -4,7 +4,7 @@ internal sealed class DiscInfoGeneric : IDiskInfo
 {
     public string DeviceId { get; set; } = default!;
 
-    public int Index { get; set; }
+    public uint Index { get; set; }
 
     public ulong Size { get; set; }
 

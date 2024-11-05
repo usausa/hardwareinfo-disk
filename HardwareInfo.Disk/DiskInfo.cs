@@ -22,7 +22,7 @@ public static class DiskInfo
             var info = new DiscInfoGeneric
             {
                 DeviceId = (string)disk.Properties["DeviceID"].Value,
-                Index = Convert.ToInt32(disk.Properties["Index"].Value, CultureInfo.InvariantCulture),
+                Index = Convert.ToUInt32(disk.Properties["Index"].Value, CultureInfo.InvariantCulture),
                 Size = Convert.ToUInt64(disk.Properties["Size"].Value, CultureInfo.InvariantCulture),
                 PnpDeviceId = (string)disk.Properties["PNPDeviceID"].Value,
                 Status = (string)disk.Properties["Status"].Value,
@@ -57,7 +57,7 @@ public static class DiskInfo
             if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata)
             {
                 info.SmartType = SmartType.Generic;
-                info.Smart = new SmartGeneric(OpenDevice(info.DeviceId), info.Index);
+                info.Smart = new SmartGeneric(OpenDevice(info.DeviceId), (byte)info.Index);
                 info.Smart.Update();
                 continue;
             }

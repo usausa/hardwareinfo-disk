@@ -4,7 +4,7 @@ public interface IDiskInfo : IDisposable
 {
     public string DeviceId { get; }
 
-    public int Index { get; }
+    public uint Index { get; }
 
     public ulong Size { get; }
 

@@ -24,10 +24,10 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 
     public bool LastUpdate { get; private set; }
 
-    public SmartGeneric(SafeFileHandle handle, int deviceNumber)
+    public SmartGeneric(SafeFileHandle handle, byte deviceNumber)
     {
         this.handle = handle;
-        this.deviceNumber = (byte)deviceNumber;
+        this.deviceNumber = deviceNumber;
 
         var parameter = new SENDCMDINPARAMS
         {

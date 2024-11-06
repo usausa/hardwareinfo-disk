@@ -4,6 +4,14 @@
 |:-|:-|
 | HardwareInfo.Disk | [![NuGet Badge](https://buildstats.info/nuget/HardwareInfo.Disk)](https://www.nuget.org/packages/HardwareInfo.Disk/) |
 
+## Supported
+
+| Type | Support |
+|:-|:-|
+| NVMe | ✅ |
+| SATA | ✅ |
+| USB(SAT only) | (TODO) |
+
 ## Usage
 
 ```csharp

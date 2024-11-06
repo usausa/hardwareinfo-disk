@@ -17,9 +17,12 @@ public enum SmartId : byte
     RecalibrationRetry = 0x0B,
     PowerCycle = 0x0C,
     SoftReadError = 0x0D,
-    CurrentHeliumLevel = 0x16, // TODO
-    UnsafeShutdown = 0xAE, // TODO
     PowerRetract = 0xC0,
+    CurrentHeliumLevel = 0x16,
+
+    ErrorCorrection = 0xB8,
+    ReportedUncorrectableError = 0xBB,
+
     LoadUnloadCycle = 0xC1,
     Temperature = 0xC2,
     HardwareEccRecovered = 0xC3,
@@ -27,8 +30,17 @@ public enum SmartId : byte
     CurrentPendingSector = 0xC5,
     UncorrectableSector = 0xC6,
     UltraDmaCrcError = 0xC7,
-    PercentageLifetimeRemaining = 0xCA, // TODO (DataAddressMarkError)
-    DiskShift = 0xDC
+
+    // Vendor specific
+
+    ProgramFail = 0xAB,
+    EraseFail = 0xAC,
+    AverageBlockErase = 0xAD,
+    UnsafeShutdown = 0xAE,
+
+    // TODO Crucial/Micron check
+    PercentageLifetimeRemaining = 0xCA,
+    TotalHostSectorWrite = 0xF6
 }
 #pragma warning restore CA1028
 #pragma warning restore CA1008

@@ -1,6 +1,5 @@
 namespace HardwareInfo.Disk;
 
-using System.Diagnostics;
 using System.Globalization;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -41,11 +40,6 @@ public static class DiskInfo
             };
             list.Add(info);
 
-            foreach (var property in disk.Properties)
-            {
-                Debug.WriteLine($"{property.Name} {property.Value?.GetType()} {property.Value}");
-            }
-
             // Get descriptor
             var descriptor = GetStorageDescriptor(info.DeviceId);
             if (descriptor is null)
@@ -75,6 +69,8 @@ public static class DiskInfo
                 info.Smart.Update();
                 continue;
             }
+
+            // TODO USB specific ?
 
             info.SmartType = SmartType.Unsupported;
             info.Smart = SmartUnsupported.Default;

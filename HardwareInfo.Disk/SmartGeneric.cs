@@ -11,10 +11,10 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
     private static readonly int SendCommandInParamsSize = Marshal.SizeOf<SENDCMDINPARAMS>();
     private static readonly int SendCommandOutParamsSize = Marshal.SizeOf<SENDCMDOUTPARAMS>();
 
-    private static readonly int BufferSize = Marshal.SizeOf<ATTRIBUTECMDOUTPARAMS>();
+    private static readonly int BufferLength = Marshal.SizeOf<ATTRIBUTECMDOUTPARAMS>();
 
-    private static readonly int AttributesSize = Marshal.SizeOf<SMART_ATTRIBUTE>();
     private static readonly int AttributesOffset = Marshal.OffsetOf<ATTRIBUTECMDOUTPARAMS>(nameof(ATTRIBUTECMDOUTPARAMS.Attributes)).ToInt32();
+    private static readonly int AttributesSize = Marshal.SizeOf<SMART_ATTRIBUTE>();
 
     private readonly SafeFileHandle handle;
 
@@ -31,13 +31,13 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 
         var parameter = new SENDCMDINPARAMS
         {
-            bDriveNumber = this.deviceNumber,
-            irDriveRegs =
+            DriveNumber = this.deviceNumber,
+            DriveRegs =
             {
-                bFeaturesReg = SMART_FEATURES.ENABLE_SMART,
-                bCylLowReg = SMART_LBA_MID,
-                bCylHighReg = SMART_LBA_HI,
-                bCommandReg = ATA_COMMAND.ATA_SMART
+                FeaturesReg = SMART_FEATURES.ENABLE_SMART,
+                CylLowReg = SMART_LBA_MID,
+                CylHighReg = SMART_LBA_HI,
+                CommandReg = ATA_COMMAND.ATA_SMART
             }
         };
         var output = default(SENDCMDOUTPARAMS);
@@ -51,7 +51,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
             out _,
             IntPtr.Zero);
 
-        buffer = Marshal.AllocHGlobal(BufferSize);
+        buffer = Marshal.AllocHGlobal(BufferLength);
     }
 
     public void Dispose()
@@ -72,18 +72,18 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
             return false;
         }
 
-        var span = new Span<byte>(buffer.ToPointer(), BufferSize);
+        var span = new Span<byte>(buffer.ToPointer(), BufferLength);
         span.Clear();
 
         var parameter = new SENDCMDINPARAMS
         {
-            bDriveNumber = deviceNumber,
-            irDriveRegs =
+            DriveNumber = deviceNumber,
+            DriveRegs =
             {
-                bFeaturesReg = SMART_FEATURES.SMART_READ_DATA,
-                bCylLowReg = SMART_LBA_MID,
-                bCylHighReg = SMART_LBA_HI,
-                bCommandReg = ATA_COMMAND.ATA_SMART
+                FeaturesReg = SMART_FEATURES.SMART_READ_DATA,
+                CylLowReg = SMART_LBA_MID,
+                CylHighReg = SMART_LBA_HI,
+                CommandReg = ATA_COMMAND.ATA_SMART
             }
         };
         LastUpdate = DeviceIoControl(
@@ -92,7 +92,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
             ref parameter,
             SendCommandInParamsSize,
             buffer,
-            BufferSize,
+            BufferLength,
             out _,
             IntPtr.Zero);
         return LastUpdate;

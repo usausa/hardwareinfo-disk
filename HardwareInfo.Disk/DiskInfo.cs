@@ -70,7 +70,19 @@ public static class DiskInfo
                 continue;
             }
 
-            // TODO USB specific ?
+            // USB
+            if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeUsb)
+            {
+                var smart = new SmartUsb(OpenDevice(info.DeviceId));
+                if (smart.Update())
+                {
+                    info.SmartType = SmartType.Generic;
+                    info.Smart = smart;
+                    continue;
+                }
+
+                smart.Dispose();
+            }
 
             info.SmartType = SmartType.Unsupported;
             info.Smart = SmartUnsupported.Default;

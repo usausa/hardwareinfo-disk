@@ -15,18 +15,20 @@ internal static class NativeMethods
 
     public const int MAX_DRIVE_ATTRIBUTES = 512;
 
-    //public const uint IOCTL_SCSI_PASS_THROUGH = 0x04d004;
-    //public const uint IOCTL_SCSI_MINIPORT = 0x04d008;
-    //public const uint IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x04d014;
-    //public const uint IOCTL_SCSI_GET_ADDRESS = 0x41018;
-    //public const uint IOCTL_DISK_PERFORMANCE = 0x70020;
+    public const uint IOCTL_SCSI_PASS_THROUGH = 0x04d004;
     public const uint IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400;
 
     public const uint DFP_SEND_DRIVE_COMMAND = 0x0007c084;
     public const uint DFP_RECEIVE_DRIVE_DATA = 0x0007c088;
 
-    internal const byte SMART_LBA_HI = 0xC2;
-    internal const byte SMART_LBA_MID = 0x4F;
+    public const byte SMART_LBA_HI = 0xC2;
+    public const byte SMART_LBA_MID = 0x4F;
+
+    public const byte SCSI_IOCTL_DATA_IN = 1;
+
+    public const byte READ_ATTRIBUTES = 0xD0;
+
+    public const byte SMART_CMD = 0xB0;
 
     //------------------------------------------------------------------------
     // Enum
@@ -140,7 +142,7 @@ internal static class NativeMethods
         NVME_LOG_PAGE_SANITIZE_STATUS = 0x81
     }
 
-    internal enum SMART_FEATURES : byte
+    public enum SMART_FEATURES : byte
     {
         SMART_READ_DATA = 0xD0,
         READ_THRESHOLDS = 0xD1,
@@ -156,7 +158,7 @@ internal static class NativeMethods
         ENABLE_DISABLE_AUTO_OFFLINE = 0xDB /* obsolete */
     }
 
-    internal enum ATA_COMMAND : byte
+    public enum ATA_COMMAND : byte
     {
         ATA_SMART = 0xB0,
         ATA_IDENTIFY_DEVICE = 0xEC
@@ -250,43 +252,43 @@ internal static class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct IDEREGS
+    public struct IDEREGS
     {
-        public SMART_FEATURES bFeaturesReg;
-        public byte bSectorCountReg;
-        public byte bSectorNumberReg;
-        public byte bCylLowReg;
-        public byte bCylHighReg;
-        public byte bDriveHeadReg;
-        public ATA_COMMAND bCommandReg;
-        public byte bReserved;
+        public SMART_FEATURES FeaturesReg;
+        public byte SectorCountReg;
+        public byte SectorNumberReg;
+        public byte CylLowReg;
+        public byte CylHighReg;
+        public byte DriveHeadReg;
+        public ATA_COMMAND CommandReg;
+        public byte Reserved;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal unsafe struct SENDCMDINPARAMS
+    public unsafe struct SENDCMDINPARAMS
     {
-        public uint cBufferSize;
-        public IDEREGS irDriveRegs;
-        public byte bDriveNumber;
-        public fixed byte bReserved[3];
-        public fixed uint dwReserved[4];
-        public fixed byte bBuffer[1];
+        public uint BufferSize;
+        public IDEREGS DriveRegs;
+        public byte DriveNumber;
+        public fixed byte Reserved[3];
+        public fixed uint wReserved[4];
+        public fixed byte Buffer[1];
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal unsafe struct DRIVERSTATUS
+    public unsafe struct DRIVERSTATUS
     {
-        public byte bDriverError;
-        public byte bIDEError;
+        public byte DriverError;
+        public byte IDEError;
         public fixed byte Reserved[10];
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal unsafe struct SENDCMDOUTPARAMS
+    public unsafe struct SENDCMDOUTPARAMS
     {
-        public uint cBufferSize;
+        public uint BufferSize;
         public DRIVERSTATUS DriverStatus;
-        public fixed byte bBuffer[1];
+        public fixed byte Buffer[1];
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -301,13 +303,39 @@ internal static class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal unsafe struct ATTRIBUTECMDOUTPARAMS
+    public unsafe struct ATTRIBUTECMDOUTPARAMS
     {
-        public uint cBufferSize;
+        public uint BufferSize;
         public DRIVERSTATUS DriverStatus;
         public byte Version;
         public byte Reserved;
         public fixed byte Attributes[12 * MAX_DRIVE_ATTRIBUTES];
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct SCSI_PASS_THROUGH
+    {
+        public short Length;
+        public byte ScsiStatus;
+        public byte PathId;
+        public byte TargetId;
+        public byte Lun;
+        public byte CdbLength;
+        public byte SenseInfoLength;
+        public byte DataIn;
+        public int DataTransferLength;
+        public int TimeOutValue;
+        public IntPtr DataBufferOffset;
+        public int SenseInfoOffset;
+        public fixed byte Cdb[16];
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct SCSI_PASS_THROUGH_WITH_BUFFERS
+    {
+        public SCSI_PASS_THROUGH Spt;
+        public fixed byte Sense[32];
+        public fixed byte Data[512];
     }
 
     //------------------------------------------------------------------------
@@ -319,78 +347,78 @@ internal static class NativeMethods
     [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern SafeFileHandle CreateFile(
-        [MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
-        [MarshalAs(UnmanagedType.U4)] FileAccess dwDesiredAccess,
-        [MarshalAs(UnmanagedType.U4)] FileShare dwShareMode,
-        IntPtr lpSecurityAttributes,
-        [MarshalAs(UnmanagedType.U4)] FileMode dwCreationDisposition,
-        [MarshalAs(UnmanagedType.U4)] FileAttributes dwFlagsAndAttributes,
-        IntPtr hTemplateFile);
+        [MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        [MarshalAs(UnmanagedType.U4)] FileAccess desiredAccess,
+        [MarshalAs(UnmanagedType.U4)] FileShare shareMode,
+        IntPtr securityAttributes,
+        [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
+        [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+        IntPtr templateFile);
 
     [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool DeviceIoControl(
-        SafeHandle hDevice,
-        uint dwIoControlCode,
-        ref STORAGE_PROPERTY_QUERY lpInBuffer,
-        int nInBufferSize,
-        ref STORAGE_DEVICE_DESCRIPTOR_HEADER lpOutBuffer,
-        int nOutBufferSize,
-        out uint lpBytesReturned,
-        IntPtr lpOverlapped);
+        SafeHandle device,
+        uint ioControlCode,
+        ref STORAGE_PROPERTY_QUERY inBuffer,
+        int inBufferSize,
+        ref STORAGE_DEVICE_DESCRIPTOR_HEADER outBuffer,
+        int outBufferSize,
+        out uint bytesReturned,
+        IntPtr overlapped);
 
     [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool DeviceIoControl(
-        SafeHandle hDevice,
-        uint dwIoControlCode,
-        ref STORAGE_PROPERTY_QUERY lpInBuffer,
-        int nInBufferSize,
-        IntPtr lpOutBuffer,
-        uint nOutBufferSize,
-        out uint lpBytesReturned,
-        IntPtr lpOverlapped);
+        SafeHandle device,
+        uint ioControlCode,
+        ref STORAGE_PROPERTY_QUERY inBuffer,
+        int inBufferSize,
+        IntPtr outBuffer,
+        uint outBufferSize,
+        out uint bytesReturned,
+        IntPtr overlapped);
 
     [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool DeviceIoControl(
-        SafeHandle hDevice,
-        uint dwIoControlCode,
-        IntPtr lpInBuffer,
-        int nInBufferSize,
-        IntPtr lpOutBuffer,
-        int nOutBufferSize,
-        out uint lpBytesReturned,
-        IntPtr lpOverlapped);
+        SafeHandle device,
+        uint ioControlCode,
+        IntPtr inBuffer,
+        int inBufferSize,
+        IntPtr outBuffer,
+        int outBufferSize,
+        out uint bytesReturned,
+        IntPtr overlapped);
 
     [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl(
-        SafeHandle hDevice,
-        uint dwIoControlCode,
-        ref SENDCMDINPARAMS lpInBuffer,
-        int nInBufferSize,
-        ref SENDCMDOUTPARAMS lpOutBuffer,
-        int nOutBufferSize,
-        out uint lpBytesReturned,
-        IntPtr lpOverlapped);
+    public static extern bool DeviceIoControl(
+        SafeHandle device,
+        uint ioControlCode,
+        ref SENDCMDINPARAMS inBuffer,
+        int inBufferSize,
+        ref SENDCMDOUTPARAMS outBuffer,
+        int outBufferSize,
+        out uint bytesReturned,
+        IntPtr overlapped);
 
     [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl(
-        SafeHandle hDevice,
-        uint dwIoControlCode,
-        ref SENDCMDINPARAMS lpInBuffer,
-        int nInBufferSize,
-        IntPtr lpOutBuffer,
-        int nOutBufferSize,
-        out uint lpBytesReturned,
-        IntPtr lpOverlapped);
+    public static extern bool DeviceIoControl(
+        SafeHandle device,
+        uint ioControlCode,
+        ref SENDCMDINPARAMS inBuffer,
+        int inBufferSize,
+        IntPtr lpOoutBufferutBuffer,
+        int outBufferSize,
+        out uint bytesReturned,
+        IntPtr overlapped);
 }
 // ReSharper restore InconsistentNaming
 // ReSharper restore IdentifierTypo

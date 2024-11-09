@@ -2,7 +2,7 @@
 
 | Package | Info |
 |:-|:-|
-| HardwareInfo.Disk | [![NuGet Badge](https://buildstats.info/nuget/HardwareInfo.Disk)](https://www.nuget.org/packages/HardwareInfo.Disk/) |
+| HardwareInfo.Disk | [![NuGet](https://img.shields.io/nuget/v/HardwareInfo.Disk.svg)](https://www.nuget.org/packages/HardwareInfo.Disk) |
 
 ## Supported
 

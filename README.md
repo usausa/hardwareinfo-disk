@@ -10,7 +10,7 @@
 |:-|:-|
 | NVMe | ✅ |
 | SATA | ✅ |
-| USB(SAT only) | (TODO) |
+| USB(SAT12 only) | ✅ |
 
 ## Usage
 

@@ -33,21 +33,21 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     public ulong DataUnitWrite { get; set; }
 
-    public ulong HostReadCommand { get; set; }
+    public ulong HostReadCommands { get; set; }
 
-    public ulong HostWriteCommand { get; set; }
+    public ulong HostWriteCommands { get; set; }
 
     public ulong ControllerBusyTime { get; set; }
 
-    public ulong PowerCycle { get; set; }
+    public ulong PowerCycles { get; set; }
 
-    public ulong PowerOnHour { get; set; }
+    public ulong PowerOnHours { get; set; }
 
-    public ulong UnsafeShutdown { get; set; }
+    public ulong UnsafeShutdowns { get; set; }
 
-    public ulong MediaError { get; set; }
+    public ulong MediaErrors { get; set; }
 
-    public ulong ErrorInfoLogEntry { get; set; }
+    public ulong ErrorInfoLogEntries { get; set; }
 
     public uint WarningCompositeTemperatureTime { get; set; }
 
@@ -105,14 +105,14 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         PercentageUsed = log->PercentageUsed;
         DataUnitRead = *(ulong*)log->DataUnitRead;
         DataUnitWrite = *(ulong*)log->DataUnitWritten;
-        HostReadCommand = *(ulong*)log->HostReadCommands;
-        HostWriteCommand = *(ulong*)log->HostWriteCommands;
+        HostReadCommands = *(ulong*)log->HostReadCommands;
+        HostWriteCommands = *(ulong*)log->HostWriteCommands;
         ControllerBusyTime = *(ulong*)log->ControllerBusyTime;
-        PowerCycle = *(ulong*)log->PowerCycles;
-        PowerOnHour = *(ulong*)log->PowerOnHours;
-        UnsafeShutdown = *(ulong*)log->UnsafeShutdowns;
-        MediaError = *(ulong*)log->MediaAndDataIntegrityErrors;
-        ErrorInfoLogEntry = *(ulong*)log->NumberErrorInformationLogEntries;
+        PowerCycles = *(ulong*)log->PowerCycles;
+        PowerOnHours = *(ulong*)log->PowerOnHours;
+        UnsafeShutdowns = *(ulong*)log->UnsafeShutdowns;
+        MediaErrors = *(ulong*)log->MediaAndDataIntegrityErrors;
+        ErrorInfoLogEntries = *(ulong*)log->NumberErrorInformationLogEntries;
         WarningCompositeTemperatureTime = log->WarningCompositeTemperatureTime;
         CriticalCompositeTemperatureTime = log->CriticalCompositeTemperatureTime;
         for (var i = 0; i < TemperatureSensors.Length; i++)

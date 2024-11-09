@@ -17,21 +17,21 @@ public interface ISmartNvme : ISmart
 
     public ulong DataUnitWrite { get; }
 
-    public ulong HostReadCommand { get; }
+    public ulong HostReadCommands { get; }
 
-    public ulong HostWriteCommand { get; }
+    public ulong HostWriteCommands { get; }
 
     public ulong ControllerBusyTime { get; }
 
-    public ulong PowerCycle { get; }
+    public ulong PowerCycles { get; }
 
-    public ulong PowerOnHour { get; }
+    public ulong PowerOnHours { get; }
 
-    public ulong UnsafeShutdown { get; }
+    public ulong UnsafeShutdowns { get; }
 
-    public ulong MediaError { get; }
+    public ulong MediaErrors { get; }
 
-    public ulong ErrorInfoLogEntry { get; }
+    public ulong ErrorInfoLogEntries { get; }
 
     public uint WarningCompositeTemperatureTime { get; }
 

@@ -4,41 +4,42 @@ namespace HardwareInfo.Disk;
 #pragma warning disable CA1028
 public enum SmartId : byte
 {
-    RawReadError = 0x01,
+    RawReadErrorRate = 0x01,
     ThroughputPerformance = 0x02,
     SpinUpTime = 0x03,
-    StartStop = 0x04,
-    ReallocatedSector = 0x05,
+    StartStopCount = 0x04,
+    ReallocatedSectorCount = 0x05,
     ReadChannelMargin = 0x06,
-    SeekError = 0x07,
+    SeekErrorRate = 0x07,
     SeekTimePerformance = 0x08,
     PowerOnHours = 0x09,
-    SpinRetry = 0x0A,
-    RecalibrationRetry = 0x0B,
-    PowerCycle = 0x0C,
-    SoftReadError = 0x0D,
-    PowerRetract = 0xC0,
+    SpinRetryCount = 0x0A,
+    RecalibrationRetries = 0x0B,
+    PowerCycleCount = 0x0C,
+    SoftReadErrorRate = 0x0D,
+    PowerOffRetractCount = 0xC0,
     CurrentHeliumLevel = 0x16,
 
-    ErrorCorrection = 0xB8,
-    ReportedUncorrectableError = 0xBB,
+    ErrorCorrectionCount = 0xB8,
+    ReportedUncorrectableErrors = 0xBB,
 
-    LoadUnloadCycle = 0xC1,
+    LoadUnloadCycleCount = 0xC1,
     Temperature = 0xC2,
     HardwareEccRecovered = 0xC3,
-    ReallocationEvent = 0xC4,
-    CurrentPendingSector = 0xC5,
-    UncorrectableSector = 0xC6,
-    UltraDmaCrcError = 0xC7,
+    ReallocationEventCount = 0xC4,
+    CurrentPendingSectorCount = 0xC5,
+    UncorrectableSectorCount = 0xC6,
+    UltraDmaCrcErrorCount = 0xC7,
 
     // Vendor specific
 
-    ProgramFail = 0xAB,
-    EraseFail = 0xAC,
-    AverageBlockErase = 0xAD,
-    UnsafeShutdown = 0xAE,
+    ProgramFailCount = 0xAB,
+    EraseFailCount = 0xAC,
+    AverageBlockEraseCount = 0xAD,
+    UnexpectedPowerLoss = 0xAE,
 
-    // TODO Crucial/Micron check
+    // Crucial/Micron
+
     PercentageLifetimeRemaining = 0xCA,
     TotalHostSectorWrite = 0xF6
 }

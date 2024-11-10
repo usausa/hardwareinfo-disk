@@ -41,7 +41,7 @@ rootCommand.Handler = CommandHandler.Create((IConsole console) =>
                 new("AvailableSpareThreshold", $"{smart.AvailableSpare}"),
                 new("PercentageUsed", $"{smart.PercentageUsed}"),
                 new("DataRead(GB)", $"{smart.DataUnitRead * 512 * 1000 / 1024 / 1024 / 1024}"),
-                new("DataWrite(GB)", $"{smart.DataUnitWrite * 512 * 1000 / 1024 / 1024 / 1024}"),
+                new("DataWrite(GB)", $"{smart.DataUnitWritten * 512 * 1000 / 1024 / 1024 / 1024}"),
                 new("HostReadCommands", $"{smart.HostReadCommands}"),
                 new("HostWriteCommands", $"{smart.HostWriteCommands}"),
                 new("ControllerBusyTime", $"{smart.ControllerBusyTime}"),

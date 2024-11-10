@@ -15,7 +15,7 @@ public interface ISmartNvme : ISmart
 
     public ulong DataUnitRead { get; }
 
-    public ulong DataUnitWrite { get; }
+    public ulong DataUnitWritten { get; }
 
     public ulong HostReadCommands { get; }
 

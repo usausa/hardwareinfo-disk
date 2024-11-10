@@ -31,7 +31,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     public ulong DataUnitRead { get; set; }
 
-    public ulong DataUnitWrite { get; set; }
+    public ulong DataUnitWritten { get; set; }
 
     public ulong HostReadCommands { get; set; }
 
@@ -104,7 +104,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         AvailableSpareThreshold = log->AvailableSpareThreshold;
         PercentageUsed = log->PercentageUsed;
         DataUnitRead = *(ulong*)log->DataUnitRead;
-        DataUnitWrite = *(ulong*)log->DataUnitWritten;
+        DataUnitWritten = *(ulong*)log->DataUnitWritten;
         HostReadCommands = *(ulong*)log->HostReadCommands;
         HostWriteCommands = *(ulong*)log->HostWriteCommands;
         ControllerBusyTime = *(ulong*)log->ControllerBusyTime;

@@ -54,4 +54,4 @@ diskinfo
 
 ## Link
 
-- [TelemetryService](https://github.com/usausa/telemetry-service)
+- [Telemetry Service](https://github.com/usausa/telemetry-service)

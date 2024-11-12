@@ -51,3 +51,7 @@ Run as administrator.
 ```
 diskinfo
 ```
+
+## Link
+
+- [TelemetryService](https://github.com/usausa/telemetry-service)

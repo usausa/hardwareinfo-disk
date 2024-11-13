@@ -31,7 +31,7 @@ foreach (var disk in DiskInfo.GetInformation())
     {
         var smart = (ISmartGeneric)disk.Smart;
 
-        Console.WriteLine($"Temperature: {smart.GetAttribute(SmartId.Temperature).RawValue % 256}");
+        Console.WriteLine($"Temperature: {smart.GetAttribute(SmartId.Temperature).RawValue & 0xFF}");
     }
 }
 ```

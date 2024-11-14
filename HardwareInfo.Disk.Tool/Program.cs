@@ -7,7 +7,7 @@ using System.CommandLine.NamingConventionBinder;
 using HardwareInfo.Disk;
 
 var rootCommand = new RootCommand("DiskInfo tool");
-rootCommand.Handler = CommandHandler.Create((IConsole console) =>
+rootCommand.Handler = CommandHandler.Create(static (IConsole console) =>
 {
     foreach (var disk in DiskInfo.GetInformation())
     {

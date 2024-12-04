@@ -54,4 +54,4 @@ diskinfo
 
 ## Link
 
-- [Telemetry Service](https://github.com/usausa/telemetry-service)
+- [Prometheus Expoerter alternative](https://github.com/usausa/prometheus-exporter-alternative)

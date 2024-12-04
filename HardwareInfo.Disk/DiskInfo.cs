@@ -52,6 +52,14 @@ public static class DiskInfo
             info.BusType = (BusType)descriptor.BusType;
             info.Removable = descriptor.Removable;
 
+            // Virtual
+            if (IsVirtualDisk(info.Model))
+            {
+                info.SmartType = SmartType.Unsupported;
+                info.Smart = SmartUnsupported.Default;
+                continue;
+            }
+
             // NVMe
             if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeNvme)
             {
@@ -94,6 +102,11 @@ public static class DiskInfo
     }
 
     private static int IndexComparison(IDiskInfo x, IDiskInfo y) => (int)x.Index - (int)y.Index;
+
+    private static bool IsVirtualDisk(string model)
+    {
+        return model.StartsWith("Virtual HD", StringComparison.OrdinalIgnoreCase);
+    }
 
     //------------------------------------------------------------------------
     // Helper

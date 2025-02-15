@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="Analyzers.ruleset" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="HardwareInfo.Disk.sln.DotSettings" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="HardwareInfo.Disk/HardwareInfo.Disk.csproj" />
+  <Project Path="HardwareInfo.Disk.Tool/HardwareInfo.Disk.Tool.csproj" />
+</Solution>

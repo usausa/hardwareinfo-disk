@@ -1,4 +1,11 @@
 <Solution>
+  <Folder Name="/Example/">
+    <Project Path="ExampleDiskInfo/ExampleDiskInfo.csproj" />
+  </Folder>
+  <Folder Name="/Library/">
+    <Project Path="HardwareInfo.Disk.Tool/HardwareInfo.Disk.Tool.csproj" />
+    <Project Path="HardwareInfo.Disk/HardwareInfo.Disk.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitattributes" />
@@ -9,7 +16,6 @@
     <File Path="HardwareInfo.Disk.sln.DotSettings" />
     <File Path="LICENSE" />
     <File Path="README.md" />
+    <File Path="Settings.XamlStyler" />
   </Folder>
-  <Project Path="HardwareInfo.Disk/HardwareInfo.Disk.csproj" />
-  <Project Path="HardwareInfo.Disk.Tool/HardwareInfo.Disk.Tool.csproj" />
 </Solution>

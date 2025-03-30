@@ -9,5 +9,6 @@ public sealed class DiskInfoModel
     public DiskInfoModel(IDiskInfo disk)
     {
         Disk = disk;
+        // TODO
     }
 }

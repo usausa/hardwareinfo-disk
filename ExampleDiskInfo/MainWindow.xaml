@@ -9,10 +9,8 @@
         x:Class="ExampleDiskInfo.MainWindow"
         Title="DiskInfo"
         Width="640"
-        Height="720"
+        Height="640"
         ResizeMode="CanMinimize">
-
-    <!-- TODO -->
 
     <Window.Resources>
         <converters:DriveLetterConverter x:Key="DriveLetterConverter" />
@@ -23,61 +21,162 @@
     </Window.DataContext>
 
     <TabControl ItemsSource="{Binding Disks}">
+
         <TabControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type models:DiskInfoModel}">
-                <TextBlock Text="{Binding Disk, Converter={StaticResource DriveLetterConverter}}" />
-            </DataTemplate>
-        </TabControl.ItemTemplate>
-        <TabControl.ContentTemplate>
             <DataTemplate DataType="{x:Type models:DiskInfoModel}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
+
                     <Label Grid.Row="0"
-                           Grid.Column="0"
-                           Content="Model" />
-                    <TextBlock Grid.Row="0"
-                               Grid.Column="1"
-                               VerticalAlignment="Center"
-                               Text="{Binding Disk.Model}" />
+                           Content="{Binding Temperature, TargetNullValue='-'}"
+                           ContentStringFormat="{}{0} ℃" />
                     <Label Grid.Row="1"
-                           Grid.Column="0"
-                           Content="Firmware" />
-                    <TextBlock Grid.Row="1"
-                               Grid.Column="1"
-                               VerticalAlignment="Center"
-                               Text="{Binding Disk.FirmwareRevision}" />
-                    <Label Grid.Row="2"
-                           Grid.Column="0"
-                           Content="Serial" />
-                    <TextBlock Grid.Row="2"
-                               Grid.Column="1"
-                               VerticalAlignment="Center"
-                               Text="{Binding Disk.SerialNumber}" />
-                    <Label Grid.Row="3"
-                           Grid.Column="0"
-                           Content="BusType" />
-                    <TextBlock Grid.Row="3"
-                               Grid.Column="1"
-                               VerticalAlignment="Center"
-                               Text="{Binding Disk.BusType}" />
-                    <Label Grid.Row="4"
-                           Grid.Column="0"
-                           Content="Size" />
-                    <TextBlock Grid.Row="4"
-                               Grid.Column="1"
-                               VerticalAlignment="Center"
-                               Text="{Binding Disk.Size}" />
+                           Content="{Binding Disk, Converter={StaticResource DriveLetterConverter}}" />
                 </Grid>
+            </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+            <DataTemplate DataType="{x:Type models:DiskInfoModel}">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0"
+                           HorizontalAlignment="Center"
+                           Content="{Binding Disk.Model}" />
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Label Grid.Row="0"
+                                   Content="Health" />
+                            <Label Grid.Row="1"
+                                   Content="{Binding Health, TargetNullValue='-'}"
+                                   ContentStringFormat="{}{0} %" />
+                            <Label Grid.Row="2"
+                                   Content="Temperature" />
+                            <Label Grid.Row="3"
+                                   Content="{Binding Temperature, TargetNullValue='-'}"
+                                   ContentStringFormat="{}{0} ℃" />
+                        </Grid>
+
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Row="0"
+                                   Grid.Column="0"
+                                   Content="Firmware" />
+                            <Label Grid.Row="0"
+                                   Grid.Column="1"
+                                   Content="{Binding Disk.FirmwareRevision}" />
+                            <Label Grid.Row="1"
+                                   Grid.Column="0"
+                                   Content="BusType" />
+                            <Label Grid.Row="1"
+                                   Grid.Column="1"
+                                   Content="{Binding Disk.BusType}" />
+                            <Label Grid.Row="2"
+                                   Grid.Column="0"
+                                   Content="DriveLetter" />
+                            <Label Grid.Row="2"
+                                   Grid.Column="1"
+                                   Content="{Binding Disk, Converter={StaticResource DriveLetterConverter}}" />
+                            <Label Grid.Row="3"
+                                   Grid.Column="0"
+                                   Content="Size" />
+                            <Label Grid.Row="3"
+                                   Grid.Column="1"
+                                   Content="{Binding Disk.Size}" />
+                        </Grid>
+
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Row="0"
+                                   Grid.Column="0"
+                                   Content="DataRead" />
+                            <Label Grid.Row="0"
+                                   Grid.Column="1"
+                                   Content="{Binding DataReadGigaBytes, TargetNullValue='-'}"
+                                   ContentStringFormat="{}{0} GB" />
+                            <Label Grid.Row="1"
+                                   Grid.Column="0"
+                                   Content="DataWrite" />
+                            <Label Grid.Row="1"
+                                   Grid.Column="1"
+                                   Content="{Binding DataWriteGigaBytes, TargetNullValue='-'}"
+                                   ContentStringFormat="{}{0} GB" />
+                            <Label Grid.Row="2"
+                                   Grid.Column="0"
+                                   Content="PowerCycles" />
+                            <Label Grid.Row="2"
+                                   Grid.Column="1"
+                                   Content="{Binding PowerCycles}" />
+                            <Label Grid.Row="3"
+                                   Grid.Column="0"
+                                   Content="PowerOnHours" />
+                            <Label Grid.Row="3"
+                                   Grid.Column="1"
+                                   Content="{Binding PowerOnHours}" />
+                        </Grid>
+                    </Grid>
+
+                    <ListView Grid.Row="2"
+                              ItemsSource="{Binding SmartValues}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Width="40"
+                                                DisplayMemberBinding="{Binding Id, StringFormat={}{0:X2}}"
+                                                Header="Id" />
+                                <GridViewColumn Width="400"
+                                                DisplayMemberBinding="{Binding Name, StringFormat={}{0:X2}}"
+                                                Header="Name" />
+                                <GridViewColumn Width="128"
+                                                DisplayMemberBinding="{Binding RawValue, StringFormat={}{0:X14}}"
+                                                Header="RawValue" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+
             </DataTemplate>
         </TabControl.ContentTemplate>
     </TabControl>

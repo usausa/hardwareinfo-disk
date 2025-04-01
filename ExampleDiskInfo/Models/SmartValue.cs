@@ -1,10 +1,22 @@
 namespace ExampleDiskInfo.Models;
 
-public sealed class SmartValue
+using CommunityToolkit.Mvvm.ComponentModel;
+
+public sealed partial class SmartValue : ObservableObject
 {
-    public int Id { get; set; }
+    [ObservableProperty]
+    public partial int Id { get; set; }
 
-    public string Name { get; set; } = string.Empty;
+    [ObservableProperty]
+    public partial string Name { get; set; }
 
-    public long RawValue { get; set; }
+    [ObservableProperty]
+    public partial ulong RawValue { get; set; }
+
+    public SmartValue(int id, string name, ulong rawValue)
+    {
+        Id = id;
+        Name = name;
+        RawValue = rawValue;
+    }
 }

@@ -12,6 +12,10 @@
 | SATA | ✅ |
 | USB(SAT12 only) | ✅ |
 
+## Example
+
+![example](https://github.com/usausa/hardwareinfo-disk/blob/main/Document/example.png)
+
 ## Usage
 
 ```csharp

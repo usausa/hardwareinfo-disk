@@ -7,9 +7,9 @@
         xmlns:models="clr-namespace:ExampleDiskInfo.Models"
         mc:Ignorable="d"
         x:Class="ExampleDiskInfo.MainWindow"
-        Title="DiskInfo"
         Width="640"
         Height="640"
+        Title="DiskInfo"
         ResizeMode="CanMinimize">
 
     <Window.Resources>

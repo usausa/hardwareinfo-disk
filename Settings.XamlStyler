@@ -14,56 +14,90 @@
     "xmlns:x",
     "xmlns:d",
     "xmlns:mc",
+
     "xmlns:i",
-    "xmlns:sd",
-    "xmlns:se",
-    "xmlns:si",
-    "xmlns:sm",
-    "xmlns:sn",
-    "xmlns:sr",
+
+    "xmlns:s",
+    "xmlns:navigation",
+
     "xmlns:app",
     "xmlns:local",
     "xmlns:dialog",
+    "xmlns:core",
     "xmlns:shell",
     "xmlns:behaviors",
     "xmlns:controls",
     "xmlns:converters",
-    "xmlns:fonts",
+    "xmlns:effects",
     "xmlns:helpers",
     "xmlns:markup",
     "xmlns:module",
+    "xmlns:views",
+    "xmlns:resources",
+    "xmlns:fonts",
+
     "xmlns:*",
+
     "mc:Ignorable, d:IsDataSource, d:LayoutOverrides, d:IsStaticText",
+
     "x:TypeArguments",
     "x:Class",
+    "x:Type",
     "x:Key, Key",
     "x:Name, Name",
-    "BasedOn, TargetType",
+    "x:Uid, Uid",
+
+    "s:Behavior.Key",
+    "s:ValidationProperty.*",
+
+    "TargetType, BasedOn",
+
     "Class",
-    "Grid.Row, Grid.RowSpan, Grid.Column, Grid.ColumnSpan, Canvas.Left, Canvas.Top, Canvas.Right, Canvas.Bottom",
-    "Style",
+
     "x:DataType",
-    "Title",
+    "s:DataContextResolver.*",
     "DataContext",
-    "sr:*",
+    "d:DataContext",
+
+    "Grid.Row, Grid.RowSpan, Grid.Column, Grid.ColumnSpan",
+    "Canvas.Left, Canvas.Top, Canvas.Right, Canvas.Bottom",
+    "AbsoluteLayout.LayoutBounds, AbsoluteLayout.LayoutFlags",
+
+    "Style",
+
+    "RowDefinitions",
+    "ColumnDefinitions",
     "Width, Height, MinWidth, MinHeight, MaxWidth, MaxHeight, WidthRequest, HeightRequest",
+    "d:DesignWidth, d:DesignHeight",
+
+    "Title",
+    "Icon",
+
+    "Orientation",
     "Margin, Padding",
+    "HorizontalTextAlignment, VerticalTextAlignment",
     "HorizontalAlignment, VerticalAlignment",
-    "HorizontalContentAlignment, VerticalContentAlignment",
+
     "Platform, PageSource, PageIndex, Offset, Color, TargetName, Property, Value, StartPoint, EndPoint",
+
     "Storyboard.*, From, To, Duration",
+
     "Command, CommandParameter",
+
     "IsEnabled",
     "IsVisible",
     "ItemsSource",
+
     "behaviors:*",
-    "input:*",
+    "s:*",
     "effects:*",
+
     "TextColor, BackgroundColor",
     "Text",
-    "Background, AllowsTransparency, BorderThickness",
+
     "*",
     "*:*",
+
     "TrueValue",
     "FalseValue",
     "HandleEmptyString",

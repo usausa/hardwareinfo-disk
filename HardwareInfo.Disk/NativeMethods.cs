@@ -415,7 +415,7 @@ internal static class NativeMethods
         uint ioControlCode,
         ref SENDCMDINPARAMS inBuffer,
         int inBufferSize,
-        IntPtr lpOoutBufferutBuffer,
+        IntPtr lpOutBufferutBuffer,
         int outBufferSize,
         out uint bytesReturned,
         IntPtr overlapped);

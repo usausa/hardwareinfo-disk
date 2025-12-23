@@ -1,31 +1,40 @@
-// ReSharper disable UseObjectOrCollectionInitializer
-#pragma warning disable IDE0017
 #pragma warning disable CA1416
-using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
-
 using HardwareInfo.Disk;
 
-var rootCommand = new RootCommand("DiskInfo tool");
-rootCommand.Handler = CommandHandler.Create(static (IConsole console) =>
+using Smart.CommandLine.Hosting;
+
+var builder = CommandHost.CreateBuilder(args);
+builder.ConfigureCommands(commands =>
+{
+    commands.ConfigureRootCommand(root =>
+    {
+        root.WithDescription("DiskInfo tool");
+        root.Configure(cmd => cmd.SetAction(_ => DisplayInfo()));
+    });
+});
+
+var host = builder.Build();
+return await host.RunAsync();
+
+static void DisplayInfo()
 {
     foreach (var disk in DiskInfo.GetInformation())
     {
-        console.WriteLine($"Disk-{disk.Index} {disk.Model}");
-        console.WriteLine($"  BusType        : {disk.BusType}");
-        console.WriteLine($"  SmartType      : {disk.SmartType}");
+        Console.WriteLine($"Disk-{disk.Index} {disk.Model}");
+        Console.WriteLine($"  BusType        : {disk.BusType}");
+        Console.WriteLine($"  SmartType      : {disk.SmartType}");
 
-        console.WriteLine($"  Size           : {disk.Size:#,0}");
-        console.WriteLine($"  BytesPerSector : {disk.BytesPerSector:#,0}");
+        Console.WriteLine($"  Size           : {disk.Size:#,0}");
+        Console.WriteLine($"  BytesPerSector : {disk.BytesPerSector:#,0}");
 
-        console.WriteLine($"  Partitions     : {disk.Partitions}");
+        Console.WriteLine($"  Partitions     : {disk.Partitions}");
         foreach (var partition in disk.GetPartitions())
         {
-            console.WriteLine($"    Partition-{partition.Index} : {partition.Name}");
+            Console.WriteLine($"    Partition-{partition.Index} : {partition.Name}");
             foreach (var drive in partition.Drives)
             {
                 var used = drive.Size - drive.FreeSpace;
-                console.WriteLine($"      Drive[{drive.Name}] : {used:#,0} / {drive.Size:#,0} ({(double)used * 100 / drive.Size:F2}%)");
+                Console.WriteLine($"      Drive[{drive.Name}] : {used:#,0} / {drive.Size:#,0} ({(double)used * 100 / drive.Size:F2}%)");
             }
         }
 
@@ -62,7 +71,7 @@ rootCommand.Handler = CommandHandler.Create(static (IConsole console) =>
                 }
             }
 
-            console.WriteLine("  SMART:");
+            Console.WriteLine("  SMART:");
             ShowSmartTable(rows);
         }
         else if (disk.SmartType == SmartType.Generic)
@@ -87,7 +96,7 @@ rootCommand.Handler = CommandHandler.Create(static (IConsole console) =>
                 }
             }
 
-            console.WriteLine("  SMART:");
+            Console.WriteLine("  SMART:");
             ShowSmartTable(rows);
 
             string ToKey(SmartId id) => Enum.IsDefined(id) ? $"{(byte)id:X2} {id}" : $"{(byte)id:X2} Undefined";
@@ -100,14 +109,8 @@ rootCommand.Handler = CommandHandler.Create(static (IConsole console) =>
             var maxKey = rows.Max(static x => x.Key.Length);
             foreach (var row in rows)
             {
-                console.WriteLine($"    {row.Key.PadRight(maxKey)} : {row.Value}");
+                Console.WriteLine($"    {row.Key.PadRight(maxKey)} : {row.Value}");
             }
         }
     }
-});
-
-var result = await rootCommand.InvokeAsync(args).ConfigureAwait(false);
-#if DEBUG
-Console.ReadLine();
-#endif
-return result;
+}

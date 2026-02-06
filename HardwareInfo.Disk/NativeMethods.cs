@@ -203,6 +203,18 @@ internal static class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR
+    {
+        public uint Version;
+        public uint Size;
+        public uint BytesPerCacheLine;
+        public uint BytesOffsetForCacheAlignment;
+        public uint BytesPerLogicalSector;
+        public uint BytesPerPhysicalSector;
+        public uint BytesOffsetForSectorAlignment;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct STORAGE_PROTOCOL_SPECIFIC_DATA
     {
         public STORAGE_PROTOCOL_TYPE ProtocolType;
@@ -416,6 +428,19 @@ internal static class NativeMethods
         ref SENDCMDINPARAMS inBuffer,
         int inBufferSize,
         IntPtr lpOutBufferutBuffer,
+        int outBufferSize,
+        out uint bytesReturned,
+        IntPtr overlapped);
+
+    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool DeviceIoControl(
+        SafeHandle device,
+        uint ioControlCode,
+        ref STORAGE_PROPERTY_QUERY inBuffer,
+        int inBufferSize,
+        ref STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR outBuffer,
         int outBufferSize,
         out uint bytesReturned,
         IntPtr overlapped);

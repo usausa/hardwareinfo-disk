@@ -51,6 +51,7 @@ public static class DiskInfo
 
             info.BusType = (BusType)descriptor.BusType;
             info.Removable = descriptor.Removable;
+            info.PhysicalBlockSize = descriptor.PhysicalBlockSize;
 
             // Virtual
             if (IsVirtualDisk(info.Model))
@@ -115,7 +116,7 @@ public static class DiskInfo
     private static SafeFileHandle OpenDevice(string devicePath) =>
         CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
 
-    private sealed record StorageDescriptor(STORAGE_BUS_TYPE BusType, bool Removable);
+    private sealed record StorageDescriptor(STORAGE_BUS_TYPE BusType, bool Removable, uint PhysicalBlockSize);
 
     private static unsafe StorageDescriptor? GetStorageDescriptor(string devicePath)
     {
@@ -145,11 +146,28 @@ public static class DiskInfo
             }
 
             var descriptor = (STORAGE_DEVICE_DESCRIPTOR*)ptr;
-            return new StorageDescriptor(descriptor->BusType, descriptor->RemovableMedia);
+            return new StorageDescriptor(descriptor->BusType, descriptor->RemovableMedia, GetPhysicalBlockSize(handle));
         }
         finally
         {
             Marshal.FreeHGlobal(ptr);
         }
+    }
+
+    private static uint GetPhysicalBlockSize(SafeFileHandle handle)
+    {
+        var query = new STORAGE_PROPERTY_QUERY
+        {
+            PropertyId = STORAGE_PROPERTY_ID.StorageAccessAlignmentProperty,
+            QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery
+        };
+
+        var alignment = default(STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR);
+        if (DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), ref alignment, Marshal.SizeOf<STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR>(), out _, IntPtr.Zero))
+        {
+            return alignment.BytesPerPhysicalSector;
+        }
+
+        return 0;
     }
 }

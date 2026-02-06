@@ -18,6 +18,8 @@ public interface IDiskInfo : IDisposable
 
     public ulong Size { get; }
 
+    public uint PhysicalBlockSize { get; }
+
     public uint BytesPerSector { get; }
 
     public uint SectorsPerTrack { get; } // TotalSectors / TotalTracks

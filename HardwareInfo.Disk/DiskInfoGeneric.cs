@@ -18,6 +18,8 @@ internal sealed class DiskInfoGeneric : IDiskInfo
 
     public ulong Size { get; set; }
 
+    public uint PhysicalBlockSize { get; set; }
+
     public uint BytesPerSector { get; set; }
 
     public uint SectorsPerTrack { get; set; }

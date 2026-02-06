@@ -1,6 +1,6 @@
 namespace HardwareInfo.Disk;
 
-internal sealed class DiscInfoGeneric : IDiskInfo
+internal sealed class DiskInfoGeneric : IDiskInfo
 {
     public uint Index { get; set; }
 

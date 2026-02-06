@@ -19,7 +19,7 @@ public static class DiskInfo
         using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
         foreach (var disk in searcher.Get())
         {
-            var info = new DiscInfoGeneric
+            var info = new DiskInfoGeneric
             {
                 Index = Convert.ToUInt32(disk.Properties["Index"].Value, CultureInfo.InvariantCulture),
                 DeviceId = (string)disk.Properties["DeviceID"].Value,

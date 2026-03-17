@@ -199,4 +199,5 @@ diskinfo
 
 ## Link
 
-- [Prometheus Expoerter alternative](https://github.com/usausa/prometheus-exporter-alternative)
+- [LinuxDotNet.Disk](https://github.com/usausa/linux-dotnet) : Linux version
+- [Prometheus Expoerter alternative](https://github.com/usausa/prometheus-exporter-alternative) : Applications that use this library

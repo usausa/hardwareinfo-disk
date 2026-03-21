@@ -200,4 +200,5 @@ diskinfo
 ## Link
 
 - [LinuxDotNet.Disk](https://github.com/usausa/linux-dotnet) : Linux version
+- [MacDotNet.Disk](https://github.com/usausa/mac-dotnet) : Mac version
 - [Prometheus Expoerter alternative](https://github.com/usausa/prometheus-exporter-alternative) : Applications that use this library

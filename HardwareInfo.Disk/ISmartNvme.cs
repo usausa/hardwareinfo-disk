@@ -3,40 +3,40 @@ namespace HardwareInfo.Disk;
 #pragma warning disable CA1819
 public interface ISmartNvme : ISmart
 {
-    public byte CriticalWarning { get; }
+    byte CriticalWarning { get; }
 
-    public short Temperature { get; }
+    short Temperature { get; }
 
-    public byte AvailableSpare { get; }
+    byte AvailableSpare { get; }
 
-    public byte AvailableSpareThreshold { get; }
+    byte AvailableSpareThreshold { get; }
 
-    public byte PercentageUsed { get; }
+    byte PercentageUsed { get; }
 
-    public ulong DataUnitRead { get; }
+    ulong DataUnitRead { get; }
 
-    public ulong DataUnitWritten { get; }
+    ulong DataUnitWritten { get; }
 
-    public ulong HostReadCommands { get; }
+    ulong HostReadCommands { get; }
 
-    public ulong HostWriteCommands { get; }
+    ulong HostWriteCommands { get; }
 
-    public ulong ControllerBusyTime { get; }
+    ulong ControllerBusyTime { get; }
 
-    public ulong PowerCycles { get; }
+    ulong PowerCycles { get; }
 
-    public ulong PowerOnHours { get; }
+    ulong PowerOnHours { get; }
 
-    public ulong UnsafeShutdowns { get; }
+    ulong UnsafeShutdowns { get; }
 
-    public ulong MediaErrors { get; }
+    ulong MediaErrors { get; }
 
-    public ulong ErrorInfoLogEntries { get; }
+    ulong ErrorInfoLogEntries { get; }
 
-    public uint WarningCompositeTemperatureTime { get; }
+    uint WarningCompositeTemperatureTime { get; }
 
-    public uint CriticalCompositeTemperatureTime { get; }
+    uint CriticalCompositeTemperatureTime { get; }
 
-    public short[] TemperatureSensors { get; }
+    short[] TemperatureSensors { get; }
 }
 #pragma warning restore CA1819

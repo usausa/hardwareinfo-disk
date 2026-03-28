@@ -26,7 +26,7 @@ public sealed partial class DiskInfoModel : ObservableObject
     [ObservableProperty]
     public partial ulong PowerOnHours { get; private set; }
 
-    public ObservableCollection<SmartValue> SmartValues { get; } = new();
+    public ObservableCollection<SmartValue> SmartValues { get; } = [];
 
     public DiskInfoModel(IDiskInfo disk)
     {

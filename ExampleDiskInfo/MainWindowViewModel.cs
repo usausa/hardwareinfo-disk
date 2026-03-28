@@ -6,7 +6,7 @@ using HardwareInfo.Disk;
 
 public sealed class MainWindowViewModel
 {
-    public ObservableCollection<DiskInfoModel> Disks { get; } = new();
+    public ObservableCollection<DiskInfoModel> Disks { get; } = [];
 
     public MainWindowViewModel()
     {

@@ -2,45 +2,45 @@ namespace HardwareInfo.Disk;
 
 public interface IDiskInfo : IDisposable
 {
-    public uint Index { get; }
+    uint Index { get; }
 
-    public string DeviceId { get; }
+    string DeviceId { get; }
 
-    public string PnpDeviceId { get; }
+    string PnpDeviceId { get; }
 
-    public string Status { get; }
+    string Status { get; }
 
-    public string Model { get; }
+    string Model { get; }
 
-    public string SerialNumber { get; }
+    string SerialNumber { get; }
 
-    public string FirmwareRevision { get; }
+    string FirmwareRevision { get; }
 
-    public ulong Size { get; }
+    ulong Size { get; }
 
-    public uint PhysicalBlockSize { get; }
+    uint PhysicalBlockSize { get; }
 
-    public uint BytesPerSector { get; }
+    uint BytesPerSector { get; }
 
-    public uint SectorsPerTrack { get; } // TotalSectors / TotalTracks
+    uint SectorsPerTrack { get; } // TotalSectors / TotalTracks
 
-    public uint TracksPerCylinder { get; } // TotalTracks / TotalCylinders
+    uint TracksPerCylinder { get; } // TotalTracks / TotalCylinders
 
-    public uint TotalHeads { get; }
+    uint TotalHeads { get; }
 
-    public ulong TotalCylinders { get; }
+    ulong TotalCylinders { get; }
 
-    public ulong TotalTracks { get; }
+    ulong TotalTracks { get; }
 
-    public ulong TotalSectors { get; }
+    ulong TotalSectors { get; }
 
-    public uint Partitions { get; }
+    uint Partitions { get; }
 
-    public bool Removable { get; }
+    bool Removable { get; }
 
-    public BusType BusType { get; }
+    BusType BusType { get; }
 
-    public SmartType SmartType { get; }
+    SmartType SmartType { get; }
 
-    public ISmart Smart { get; }
+    ISmart Smart { get; }
 }

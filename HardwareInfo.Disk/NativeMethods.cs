@@ -7,7 +7,7 @@ using Microsoft.Win32.SafeHandles;
 // ReSharper disable CommentTypo
 // ReSharper disable IdentifierTypo
 // ReSharper disable InconsistentNaming
-internal static class NativeMethods
+internal static partial class NativeMethods
 {
     //------------------------------------------------------------------------
     // Const
@@ -356,21 +356,21 @@ internal static class NativeMethods
 
     private const string Kernel32 = "kernel32.dll";
 
-    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+    [LibraryImport(Kernel32, EntryPoint = "CreateFileW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern SafeFileHandle CreateFile(
-        [MarshalAs(UnmanagedType.LPWStr)] string fileName,
-        [MarshalAs(UnmanagedType.U4)] FileAccess desiredAccess,
-        [MarshalAs(UnmanagedType.U4)] FileShare shareMode,
+    public static partial SafeFileHandle CreateFile(
+        string fileName,
+        FileAccess desiredAccess,
+        FileShare shareMode,
         IntPtr securityAttributes,
-        [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-        [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+        FileMode creationDisposition,
+        FileAttributes flagsAndAttributes,
         IntPtr templateFile);
 
-    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+    [LibraryImport(Kernel32, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DeviceIoControl(
+    public static partial bool DeviceIoControl(
         SafeHandle device,
         uint ioControlCode,
         ref STORAGE_PROPERTY_QUERY inBuffer,
@@ -380,10 +380,10 @@ internal static class NativeMethods
         out uint bytesReturned,
         IntPtr overlapped);
 
-    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+    [LibraryImport(Kernel32, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DeviceIoControl(
+    public static partial bool DeviceIoControl(
         SafeHandle device,
         uint ioControlCode,
         ref STORAGE_PROPERTY_QUERY inBuffer,
@@ -393,10 +393,10 @@ internal static class NativeMethods
         out uint bytesReturned,
         IntPtr overlapped);
 
-    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+    [LibraryImport(Kernel32, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DeviceIoControl(
+    public static partial bool DeviceIoControl(
         SafeHandle device,
         uint ioControlCode,
         IntPtr inBuffer,
@@ -406,10 +406,10 @@ internal static class NativeMethods
         out uint bytesReturned,
         IntPtr overlapped);
 
-    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+    [LibraryImport(Kernel32, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DeviceIoControl(
+    public static partial bool DeviceIoControl(
         SafeHandle device,
         uint ioControlCode,
         ref SENDCMDINPARAMS inBuffer,
@@ -419,10 +419,10 @@ internal static class NativeMethods
         out uint bytesReturned,
         IntPtr overlapped);
 
-    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
+    [LibraryImport(Kernel32, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DeviceIoControl(
+    public static partial bool DeviceIoControl(
         SafeHandle device,
         uint ioControlCode,
         ref SENDCMDINPARAMS inBuffer,
@@ -432,10 +432,10 @@ internal static class NativeMethods
         out uint bytesReturned,
         IntPtr overlapped);
 
-    [DllImport(Kernel32, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+    [LibraryImport(Kernel32, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DeviceIoControl(
+    public static partial bool DeviceIoControl(
         SafeHandle device,
         uint ioControlCode,
         ref STORAGE_PROPERTY_QUERY inBuffer,

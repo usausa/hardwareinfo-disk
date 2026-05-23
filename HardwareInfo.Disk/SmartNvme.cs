@@ -1,5 +1,6 @@
 namespace HardwareInfo.Disk;
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Microsoft.Win32.SafeHandles;
@@ -9,13 +10,13 @@ using static HardwareInfo.Disk.NativeMethods;
 
 internal sealed class SmartNvme : ISmartNvme, IDisposable
 {
-    private static readonly int BufferSize = Marshal.SizeOf<STORAGE_QUERY_BUFFER>();
+    private static readonly int BufferSize = Unsafe.SizeOf<STORAGE_QUERY_BUFFER>();
 
-    private static readonly int QueryBufferOffset = Marshal.OffsetOf<STORAGE_QUERY_BUFFER>(nameof(STORAGE_QUERY_BUFFER.Buffer)).ToInt32();
+    private static readonly unsafe int QueryBufferOffset = (int)((byte*)Unsafe.AsPointer(ref Unsafe.AsRef(in default(STORAGE_QUERY_BUFFER).Buffer)) - (byte*)Unsafe.AsPointer(ref Unsafe.AsRef(in default(STORAGE_QUERY_BUFFER))));
 
     private readonly SafeFileHandle handle;
 
-    private IntPtr buffer;
+    private unsafe void* buffer;
 
     public bool LastUpdate { get; private set; }
 
@@ -58,16 +59,16 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
     public SmartNvme(SafeFileHandle handle)
     {
         this.handle = handle;
-        buffer = Marshal.AllocHGlobal(BufferSize);
+        unsafe { buffer = NativeMemory.Alloc((nuint)BufferSize); }
     }
 
-    public void Dispose()
+    public unsafe void Dispose()
     {
         handle.Dispose();
-        if (buffer != IntPtr.Zero)
+        if (buffer != null)
         {
-            Marshal.FreeHGlobal(buffer);
-            buffer = IntPtr.Zero;
+            NativeMemory.Free(buffer);
+            buffer = null;
         }
     }
 
@@ -79,25 +80,25 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
             return false;
         }
 
-        var span = new Span<byte>(buffer.ToPointer(), BufferSize);
+        var span = new Span<byte>(buffer, BufferSize);
         span.Clear();
 
         var query = (STORAGE_QUERY_BUFFER*)buffer;
         query->ProtocolSpecific.ProtocolType = STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
         query->ProtocolSpecific.DataType = (uint)STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage;
         query->ProtocolSpecific.ProtocolDataRequestValue = (uint)NVME_LOG_PAGES.NVME_LOG_PAGE_HEALTH_INFO;
-        query->ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<STORAGE_PROTOCOL_SPECIFIC_DATA>();
+        query->ProtocolSpecific.ProtocolDataOffset = (uint)Unsafe.SizeOf<STORAGE_PROTOCOL_SPECIFIC_DATA>();
         query->ProtocolSpecific.ProtocolDataLength = (uint)(BufferSize - QueryBufferOffset);
         query->PropertyId = STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
         query->QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery;
 
-        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, buffer, BufferSize, buffer, BufferSize, out _, IntPtr.Zero))
+        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, (nint)buffer, BufferSize, (nint)buffer, BufferSize, out _, IntPtr.Zero))
         {
             LastUpdate = false;
             return false;
         }
 
-        var log = (NVME_HEALTH_INFO_LOG*)IntPtr.Add(buffer, QueryBufferOffset);
+        var log = (NVME_HEALTH_INFO_LOG*)((byte*)buffer + QueryBufferOffset);
         CriticalWarning = log->CriticalWarning;
         Temperature = KelvinToCelsius(*(ushort*)log->CompositeTemp);
         AvailableSpare = log->AvailableSpare;

@@ -1,5 +1,6 @@
 namespace HardwareInfo.Disk;
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Microsoft.Win32.SafeHandles;
@@ -8,19 +9,19 @@ using static HardwareInfo.Disk.NativeMethods;
 
 internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 {
-    private static readonly int SendCommandInParamsSize = Marshal.SizeOf<SENDCMDINPARAMS>();
-    private static readonly int SendCommandOutParamsSize = Marshal.SizeOf<SENDCMDOUTPARAMS>();
+    private static readonly int SendCommandInParamsSize = Unsafe.SizeOf<SENDCMDINPARAMS>();
+    private static readonly int SendCommandOutParamsSize = Unsafe.SizeOf<SENDCMDOUTPARAMS>();
 
-    private static readonly int BufferLength = Marshal.SizeOf<ATTRIBUTECMDOUTPARAMS>();
+    private static readonly int BufferLength = Unsafe.SizeOf<ATTRIBUTECMDOUTPARAMS>();
 
-    private static readonly int AttributesOffset = Marshal.OffsetOf<ATTRIBUTECMDOUTPARAMS>(nameof(ATTRIBUTECMDOUTPARAMS.Attributes)).ToInt32();
-    private static readonly int AttributesSize = Marshal.SizeOf<SMART_ATTRIBUTE>();
+    private static readonly unsafe int AttributesOffset = (int)((byte*)Unsafe.AsPointer(ref Unsafe.AsRef(in default(ATTRIBUTECMDOUTPARAMS).Attributes)) - (byte*)Unsafe.AsPointer(ref Unsafe.AsRef(in default(ATTRIBUTECMDOUTPARAMS))));
+    private static readonly int AttributesSize = Unsafe.SizeOf<SMART_ATTRIBUTE>();
 
     private readonly SafeFileHandle handle;
 
     private readonly byte deviceNumber;
 
-    private IntPtr buffer;
+    private unsafe void* buffer;
 
     public bool LastUpdate { get; private set; }
 
@@ -51,16 +52,16 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
             out _,
             IntPtr.Zero);
 
-        buffer = Marshal.AllocHGlobal(BufferLength);
+        buffer = NativeMemory.Alloc((nuint)BufferLength);
     }
 
-    public void Dispose()
+    public unsafe void Dispose()
     {
         handle.Dispose();
-        if (buffer != IntPtr.Zero)
+        if (buffer != null)
         {
-            Marshal.FreeHGlobal(buffer);
-            buffer = IntPtr.Zero;
+            NativeMemory.Free(buffer);
+            buffer = null;
         }
     }
 
@@ -72,7 +73,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
             return false;
         }
 
-        var span = new Span<byte>(buffer.ToPointer(), BufferLength);
+        var span = new Span<byte>(buffer, BufferLength);
         span.Clear();
 
         var parameter = new SENDCMDINPARAMS
@@ -91,7 +92,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
             DFP_RECEIVE_DRIVE_DATA,
             ref parameter,
             SendCommandInParamsSize,
-            buffer,
+            (nint)buffer,
             BufferLength,
             out _,
             IntPtr.Zero);
@@ -104,7 +105,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 
         for (var i = 0; i < MAX_DRIVE_ATTRIBUTES; i++)
         {
-            var attr = (SMART_ATTRIBUTE*)IntPtr.Add(buffer, AttributesOffset + (i * AttributesSize));
+            var attr = (SMART_ATTRIBUTE*)((byte*)buffer + AttributesOffset + (i * AttributesSize));
             if (attr->Id != 0)
             {
                 list.Add((SmartId)attr->Id);
@@ -119,7 +120,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
         var target = (byte)id;
         for (var i = 0; i < MAX_DRIVE_ATTRIBUTES; i++)
         {
-            var attr = (SMART_ATTRIBUTE*)(buffer + AttributesOffset + (i * AttributesSize));
+            var attr = (SMART_ATTRIBUTE*)((byte*)buffer + AttributesOffset + (i * AttributesSize));
             if (attr->Id == target)
             {
                 return new SmartAttribute

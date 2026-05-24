@@ -10,9 +10,9 @@ using static HardwareInfo.Disk.NativeMethods;
 
 internal sealed class SmartNvme : ISmartNvme, IDisposable
 {
-    private static readonly int BufferSize = Unsafe.SizeOf<STORAGE_QUERY_BUFFER>();
+    private static readonly int BufferSize = Marshal.SizeOf<STORAGE_QUERY_BUFFER>();
 
-    private static readonly unsafe int QueryBufferOffset = (int)((byte*)Unsafe.AsPointer(ref Unsafe.AsRef(in default(STORAGE_QUERY_BUFFER).Buffer)) - (byte*)Unsafe.AsPointer(ref Unsafe.AsRef(in default(STORAGE_QUERY_BUFFER))));
+    private static readonly int QueryBufferOffset;
 
     private readonly SafeFileHandle handle;
 
@@ -56,10 +56,18 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     public short[] TemperatureSensors { get; set; } = new short[8];
 
-    public SmartNvme(SafeFileHandle handle)
+#pragma warning disable CA1810
+    static unsafe SmartNvme()
+    {
+        STORAGE_QUERY_BUFFER s = default;
+        QueryBufferOffset = (int)(s.Buffer - (byte*)Unsafe.AsPointer(ref s));
+    }
+#pragma warning restore CA1810
+
+    public unsafe SmartNvme(SafeFileHandle handle)
     {
         this.handle = handle;
-        unsafe { buffer = NativeMemory.Alloc((nuint)BufferSize); }
+        buffer = NativeMemory.Alloc((nuint)BufferSize);
     }
 
     public unsafe void Dispose()
@@ -87,7 +95,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         query->ProtocolSpecific.ProtocolType = STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
         query->ProtocolSpecific.DataType = (uint)STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage;
         query->ProtocolSpecific.ProtocolDataRequestValue = (uint)NVME_LOG_PAGES.NVME_LOG_PAGE_HEALTH_INFO;
-        query->ProtocolSpecific.ProtocolDataOffset = (uint)Unsafe.SizeOf<STORAGE_PROTOCOL_SPECIFIC_DATA>();
+        query->ProtocolSpecific.ProtocolDataOffset = (uint)Marshal.SizeOf<STORAGE_PROTOCOL_SPECIFIC_DATA>();
         query->ProtocolSpecific.ProtocolDataLength = (uint)(BufferSize - QueryBufferOffset);
         query->PropertyId = STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
         query->QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery;

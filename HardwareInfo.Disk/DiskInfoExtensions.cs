@@ -1,5 +1,6 @@
 namespace HardwareInfo.Disk;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Management;
 using System.Runtime.Versioning;
@@ -7,6 +8,8 @@ using System.Runtime.Versioning;
 [SupportedOSPlatform("windows")]
 public static class DiskInfoExtensions
 {
+    [RequiresUnreferencedCode("Uses System.Management (WMI) which is not AOT-compatible")]
+    [RequiresDynamicCode("Uses System.Management (WMI) which requires dynamic code generation")]
     public static IEnumerable<PartitionInfo> GetPartitions(this IDiskInfo disk)
     {
         using var partitions = new ManagementObjectSearcher(
@@ -42,6 +45,8 @@ public static class DiskInfoExtensions
         }
     }
 
+    [RequiresUnreferencedCode("Uses System.Management (WMI) which is not AOT-compatible")]
+    [RequiresDynamicCode("Uses System.Management (WMI) which requires dynamic code generation")]
     public static IEnumerable<DriveInfo> GetDrives(this IDiskInfo disk) =>
         disk.GetPartitions().SelectMany(static x => x.Drives);
 }

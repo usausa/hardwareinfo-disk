@@ -9,13 +9,14 @@ using static HardwareInfo.Disk.NativeMethods;
 
 internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 {
-    private static readonly int SendCommandInParamsSize = Unsafe.SizeOf<SENDCMDINPARAMS>();
-    private static readonly int SendCommandOutParamsSize = Unsafe.SizeOf<SENDCMDOUTPARAMS>();
+    private static readonly int SendCommandInParamsSize = Marshal.SizeOf<SENDCMDINPARAMS>();
+    private static readonly int SendCommandOutParamsSize = Marshal.SizeOf<SENDCMDOUTPARAMS>();
 
-    private static readonly int BufferLength = Unsafe.SizeOf<ATTRIBUTECMDOUTPARAMS>();
+    private static readonly int BufferLength = Marshal.SizeOf<ATTRIBUTECMDOUTPARAMS>();
 
-    private static readonly unsafe int AttributesOffset = (int)((byte*)Unsafe.AsPointer(ref Unsafe.AsRef(in default(ATTRIBUTECMDOUTPARAMS).Attributes)) - (byte*)Unsafe.AsPointer(ref Unsafe.AsRef(in default(ATTRIBUTECMDOUTPARAMS))));
-    private static readonly int AttributesSize = Unsafe.SizeOf<SMART_ATTRIBUTE>();
+    private static readonly int AttributesSize = Marshal.SizeOf<SMART_ATTRIBUTE>();
+
+    private static readonly int AttributesOffset;
 
     private readonly SafeFileHandle handle;
 
@@ -25,7 +26,15 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 
     public bool LastUpdate { get; private set; }
 
-    public SmartGeneric(SafeFileHandle handle, byte deviceNumber)
+#pragma warning disable CA1810
+    static unsafe SmartGeneric()
+    {
+        ATTRIBUTECMDOUTPARAMS s = default;
+        AttributesOffset = (int)(s.Attributes - (byte*)Unsafe.AsPointer(ref s));
+    }
+#pragma warning restore CA1810
+
+    public unsafe SmartGeneric(SafeFileHandle handle, byte deviceNumber)
     {
         this.handle = handle;
         this.deviceNumber = deviceNumber;

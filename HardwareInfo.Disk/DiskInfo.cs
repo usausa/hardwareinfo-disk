@@ -1,5 +1,6 @@
 namespace HardwareInfo.Disk;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -12,6 +13,8 @@ using static HardwareInfo.Disk.NativeMethods;
 [SupportedOSPlatform("windows")]
 public static class DiskInfo
 {
+    [RequiresUnreferencedCode("Uses System.Management (WMI) which is not AOT-compatible")]
+    [RequiresDynamicCode("Uses System.Management (WMI) which requires dynamic code generation")]
     public static IReadOnlyList<IDiskInfo> GetInformation()
     {
         var list = new List<IDiskInfo>();
@@ -132,15 +135,15 @@ public static class DiskInfo
             QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery
         };
         var header = default(STORAGE_DEVICE_DESCRIPTOR_HEADER);
-        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), ref header, Marshal.SizeOf<STORAGE_DEVICE_DESCRIPTOR_HEADER>(), out _, IntPtr.Zero))
+        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf<STORAGE_PROPERTY_QUERY>(), ref header, Marshal.SizeOf<STORAGE_DEVICE_DESCRIPTOR_HEADER>(), out _, IntPtr.Zero))
         {
             return null;
         }
 
-        var ptr = Marshal.AllocHGlobal((int)header.Size);
+        var ptr = (nint)NativeMemory.Alloc((nuint)(int)header.Size);
         try
         {
-            if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), ptr, header.Size, out _, IntPtr.Zero))
+            if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf<STORAGE_PROPERTY_QUERY>(), ptr, header.Size, out _, IntPtr.Zero))
             {
                 return null;
             }
@@ -150,7 +153,7 @@ public static class DiskInfo
         }
         finally
         {
-            Marshal.FreeHGlobal(ptr);
+            NativeMemory.Free(ptr.ToPointer());
         }
     }
 
@@ -163,7 +166,7 @@ public static class DiskInfo
         };
 
         var alignment = default(STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR);
-        if (DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), ref alignment, Marshal.SizeOf<STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR>(), out _, IntPtr.Zero))
+        if (DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf<STORAGE_PROPERTY_QUERY>(), ref alignment, Marshal.SizeOf<STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR>(), out _, IntPtr.Zero))
         {
             return alignment.BytesPerPhysicalSector;
         }

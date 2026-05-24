@@ -1,7 +1,6 @@
 namespace HardwareInfo.Disk;
 
-using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Microsoft.Win32.SafeHandles;
@@ -15,34 +14,45 @@ public sealed class SmartUsb : ISmartGeneric, IDisposable
     private static readonly short SptSize = (short)Marshal.SizeOf<SCSI_PASS_THROUGH>();
     private static readonly int BufferSize = Marshal.SizeOf<SCSI_PASS_THROUGH_WITH_BUFFERS>();
 
-    private static readonly int SenseOffset = Marshal.OffsetOf<SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(SCSI_PASS_THROUGH_WITH_BUFFERS.Sense)).ToInt32();
-    private static readonly int DataOffset = Marshal.OffsetOf<SCSI_PASS_THROUGH_WITH_BUFFERS>(nameof(SCSI_PASS_THROUGH_WITH_BUFFERS.Data)).ToInt32();
-    private static readonly byte SenseSize = (byte)(DataOffset - SenseOffset);
-    private static readonly int DataSize = BufferSize - DataOffset;
+    private static readonly int SenseOffset;
+    private static readonly int DataOffset;
+    private static readonly byte SenseSize;
+    private static readonly int DataSize;
+    private static readonly int AttributesOffset;
 
-    private static readonly int AttributesOffset = DataOffset + 2;
     private static readonly int AttributesSize = Marshal.SizeOf<SMART_ATTRIBUTE>();
 
     private readonly SafeFileHandle handle;
 
-    private IntPtr buffer;
+    private unsafe void* buffer;
 
     public bool LastUpdate { get; private set; }
 
-    public SmartUsb(SafeFileHandle handle)
+#pragma warning disable CA1810
+    static unsafe SmartUsb()
+    {
+        SCSI_PASS_THROUGH_WITH_BUFFERS s = default;
+        SenseOffset = (int)(s.Sense - (byte*)Unsafe.AsPointer(ref s));
+        DataOffset = (int)(s.Data - (byte*)Unsafe.AsPointer(ref s));
+        SenseSize = (byte)(DataOffset - SenseOffset);
+        DataSize = Marshal.SizeOf<SCSI_PASS_THROUGH_WITH_BUFFERS>() - DataOffset;
+        AttributesOffset = DataOffset + 2;
+    }
+#pragma warning restore CA1810
+
+    public unsafe SmartUsb(SafeFileHandle handle)
     {
         this.handle = handle;
-
-        buffer = Marshal.AllocHGlobal(BufferSize);
+        buffer = NativeMemory.Alloc((nuint)BufferSize);
     }
 
-    public void Dispose()
+    public unsafe void Dispose()
     {
         handle.Dispose();
-        if (buffer != IntPtr.Zero)
+        if (buffer != null)
         {
-            Marshal.FreeHGlobal(buffer);
-            buffer = IntPtr.Zero;
+            NativeMemory.Free(buffer);
+            buffer = null;
         }
     }
 
@@ -54,7 +64,7 @@ public sealed class SmartUsb : ISmartGeneric, IDisposable
             return false;
         }
 
-        var span = new Span<byte>(buffer.ToPointer(), BufferSize);
+        var span = new Span<byte>(buffer, BufferSize);
         span.Clear();
 
         var swb = (SCSI_PASS_THROUGH_WITH_BUFFERS*)buffer;
@@ -81,9 +91,9 @@ public sealed class SmartUsb : ISmartGeneric, IDisposable
         var ret = DeviceIoControl(
             handle,
             IOCTL_SCSI_PASS_THROUGH,
-            buffer,
+            (nint)buffer,
             BufferSize,
-            buffer,
+            (nint)buffer,
             BufferSize,
             out var returnedBytes,
             IntPtr.Zero);
@@ -98,7 +108,7 @@ public sealed class SmartUsb : ISmartGeneric, IDisposable
 
         for (var i = 0; i < MaxAttributeCount; i++)
         {
-            var attr = (SMART_ATTRIBUTE*)IntPtr.Add(buffer, AttributesOffset + (i * AttributesSize));
+            var attr = (SMART_ATTRIBUTE*)((byte*)buffer + AttributesOffset + (i * AttributesSize));
             if (attr->Id != 0)
             {
                 list.Add((SmartId)attr->Id);
@@ -113,7 +123,7 @@ public sealed class SmartUsb : ISmartGeneric, IDisposable
         var target = (byte)id;
         for (var i = 0; i < MaxAttributeCount; i++)
         {
-            var attr = (SMART_ATTRIBUTE*)(buffer + AttributesOffset + (i * AttributesSize));
+            var attr = (SMART_ATTRIBUTE*)((byte*)buffer + AttributesOffset + (i * AttributesSize));
             if (attr->Id == target)
             {
                 return new SmartAttribute

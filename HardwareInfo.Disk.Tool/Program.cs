@@ -18,7 +18,8 @@ return await host.RunAsync();
 
 static void DisplayInfo()
 {
-    foreach (var disk in DiskInfo.GetInformation())
+    var disks = DiskInfo.GetInformation();
+    foreach (var disk in disks)
     {
         Console.WriteLine($"Disk-{disk.Index} {disk.Model}");
         Console.WriteLine($"  BusType        : {disk.BusType}");
@@ -47,7 +48,7 @@ static void DisplayInfo()
                 new("CriticalWarning", $"{smart.CriticalWarning:X2}"),
                 new("Temperature", $"{smart.Temperature}"),
                 new("AvailableSpare", $"{smart.AvailableSpare}"),
-                new("AvailableSpareThreshold", $"{smart.AvailableSpare}"),
+                new("AvailableSpareThreshold", $"{smart.AvailableSpareThreshold}"),
                 new("PercentageUsed", $"{smart.PercentageUsed}"),
                 new("DataRead(GB)", $"{smart.DataUnitRead * 512 * 1000 / 1024 / 1024 / 1024}"),
                 new("DataWrite(GB)", $"{smart.DataUnitWritten * 512 * 1000 / 1024 / 1024 / 1024}"),
@@ -99,18 +100,24 @@ static void DisplayInfo()
             Console.WriteLine("  SMART:");
             ShowSmartTable(rows);
 
-            string ToKey(SmartId id) => Enum.IsDefined(id) ? $"{(byte)id:X2} {id}" : $"{(byte)id:X2} Undefined";
-
-            string ToValue<T>(SmartAttribute attr, Func<ulong, T> converter) => $"{attr.RawValue:X12} {converter(attr.RawValue)}";
         }
+    }
 
-        void ShowSmartTable(List<KeyValuePair<string, string>> rows)
+    foreach (var disk in disks)
+    {
+        disk.Dispose();
+    }
+
+    static string ToKey(SmartId id) => Enum.IsDefined(id) ? $"{(byte)id:X2} {id}" : $"{(byte)id:X2} Undefined";
+
+    static string ToValue<T>(SmartAttribute attr, Func<ulong, T> converter) => $"{attr.RawValue:X12} {converter(attr.RawValue)}";
+
+    static void ShowSmartTable(List<KeyValuePair<string, string>> rows)
+    {
+        var maxKey = rows.Max(static x => x.Key.Length);
+        foreach (var row in rows)
         {
-            var maxKey = rows.Max(static x => x.Key.Length);
-            foreach (var row in rows)
-            {
-                Console.WriteLine($"    {row.Key.PadRight(maxKey)} : {row.Value}");
-            }
+            Console.WriteLine($"    {row.Key.PadRight(maxKey)} : {row.Value}");
         }
     }
 }

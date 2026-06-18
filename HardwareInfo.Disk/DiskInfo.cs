@@ -18,99 +18,112 @@ public static class DiskInfo
     public static IReadOnlyList<IDiskInfo> GetInformation()
     {
         var list = new List<IDiskInfo>();
-
-        using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
-        foreach (var disk in searcher.Get())
+        try
         {
-            var info = new DiskInfoGeneric
+            using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
+            foreach (var disk in searcher.Get())
             {
-                Index = Convert.ToUInt32(disk.Properties["Index"].Value, CultureInfo.InvariantCulture),
-                DeviceId = (string)disk.Properties["DeviceID"].Value,
-                PnpDeviceId = (string)disk.Properties["PNPDeviceID"].Value,
-                Status = (string)disk.Properties["Status"].Value,
-                Model = (string)disk.Properties["Model"].Value,
-                SerialNumber = (string)disk.Properties["SerialNumber"].Value,
-                FirmwareRevision = (string)disk.Properties["FirmwareRevision"].Value,
-                Size = Convert.ToUInt64(disk.Properties["Size"].Value, CultureInfo.InvariantCulture),
-                BytesPerSector = Convert.ToUInt32(disk.Properties["BytesPerSector"].Value, CultureInfo.InvariantCulture),
-                SectorsPerTrack = Convert.ToUInt32(disk.Properties["SectorsPerTrack"].Value, CultureInfo.InvariantCulture),
-                TracksPerCylinder = Convert.ToUInt32(disk.Properties["TracksPerCylinder"].Value, CultureInfo.InvariantCulture),
-                TotalHeads = Convert.ToUInt32(disk.Properties["TotalHeads"].Value, CultureInfo.InvariantCulture),
-                TotalCylinders = Convert.ToUInt64(disk.Properties["TotalCylinders"].Value, CultureInfo.InvariantCulture),
-                TotalTracks = Convert.ToUInt64(disk.Properties["TotalTracks"].Value, CultureInfo.InvariantCulture),
-                TotalSectors = Convert.ToUInt64(disk.Properties["TotalSectors"].Value, CultureInfo.InvariantCulture),
-                Partitions = Convert.ToUInt32(disk.Properties["Partitions"].Value, CultureInfo.InvariantCulture)
-            };
-            list.Add(info);
-
-            // Get descriptor
-            var descriptor = GetStorageDescriptor(info.DeviceId);
-            if (descriptor is null)
-            {
-                info.SmartType = SmartType.Unsupported;
-                info.Smart = SmartUnsupported.Default;
-                continue;
-            }
-
-            info.BusType = (BusType)descriptor.BusType;
-            info.Removable = descriptor.Removable;
-            info.PhysicalBlockSize = descriptor.PhysicalBlockSize;
-
-            // Virtual
-            if (IsVirtualDisk(info.Model))
-            {
-                info.SmartType = SmartType.Unsupported;
-                info.Smart = SmartUnsupported.Default;
-                continue;
-            }
-
-            // NVMe
-            if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeNvme)
-            {
-                info.SmartType = SmartType.Nvme;
-                info.Smart = new SmartNvme(OpenDevice(info.DeviceId));
-                info.Smart.Update();
-                continue;
-            }
-
-            // ATA
-            if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata)
-            {
-                info.SmartType = SmartType.Generic;
-                info.Smart = new SmartGeneric(OpenDevice(info.DeviceId), (byte)info.Index);
-                info.Smart.Update();
-                continue;
-            }
-
-            // USB
-            if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeUsb)
-            {
-                var smart = new SmartUsb(OpenDevice(info.DeviceId));
-                if (smart.Update())
+                var info = new DiskInfoGeneric
                 {
-                    info.SmartType = SmartType.Generic;
-                    info.Smart = smart;
+                    Index = Convert.ToUInt32(disk.Properties["Index"].Value, CultureInfo.InvariantCulture),
+                    DeviceId = (string)disk.Properties["DeviceID"].Value,
+                    PnpDeviceId = (string)disk.Properties["PNPDeviceID"].Value,
+                    Status = (string)disk.Properties["Status"].Value,
+                    Model = (string)disk.Properties["Model"].Value,
+                    SerialNumber = (string)disk.Properties["SerialNumber"].Value,
+                    FirmwareRevision = (string)disk.Properties["FirmwareRevision"].Value,
+                    Size = Convert.ToUInt64(disk.Properties["Size"].Value, CultureInfo.InvariantCulture),
+                    BytesPerSector = Convert.ToUInt32(disk.Properties["BytesPerSector"].Value, CultureInfo.InvariantCulture),
+                    SectorsPerTrack = Convert.ToUInt32(disk.Properties["SectorsPerTrack"].Value, CultureInfo.InvariantCulture),
+                    TracksPerCylinder = Convert.ToUInt32(disk.Properties["TracksPerCylinder"].Value, CultureInfo.InvariantCulture),
+                    TotalHeads = Convert.ToUInt32(disk.Properties["TotalHeads"].Value, CultureInfo.InvariantCulture),
+                    TotalCylinders = Convert.ToUInt64(disk.Properties["TotalCylinders"].Value, CultureInfo.InvariantCulture),
+                    TotalTracks = Convert.ToUInt64(disk.Properties["TotalTracks"].Value, CultureInfo.InvariantCulture),
+                    TotalSectors = Convert.ToUInt64(disk.Properties["TotalSectors"].Value, CultureInfo.InvariantCulture),
+                    Partitions = Convert.ToUInt32(disk.Properties["Partitions"].Value, CultureInfo.InvariantCulture)
+                };
+                list.Add(info);
+
+                // Get descriptor
+                var descriptor = GetStorageDescriptor(info.DeviceId);
+                if (descriptor is null)
+                {
+                    info.SmartType = SmartType.Unsupported;
+                    info.Smart = SmartUnsupported.Default;
                     continue;
                 }
 
-                smart.Dispose();
+                info.BusType = (BusType)descriptor.BusType;
+                info.Removable = descriptor.Removable;
+                info.PhysicalBlockSize = descriptor.PhysicalBlockSize;
+
+                // Virtual
+                if (IsVirtualDisk(info.Model))
+                {
+                    info.SmartType = SmartType.Unsupported;
+                    info.Smart = SmartUnsupported.Default;
+                    continue;
+                }
+
+                // NVMe
+                if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeNvme)
+                {
+                    info.SmartType = SmartType.Nvme;
+                    info.Smart = new SmartNvme(OpenDevice(info.DeviceId));
+                    info.Smart.Update();
+                    continue;
+                }
+
+                // ATA
+                if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata)
+                {
+                    info.SmartType = SmartType.Generic;
+                    info.Smart = new SmartGeneric(OpenDevice(info.DeviceId), (byte)info.Index);
+                    info.Smart.Update();
+                    continue;
+                }
+
+                // USB
+                if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeUsb)
+                {
+                    var smart = new SmartUsb(OpenDevice(info.DeviceId));
+                    if (smart.Update())
+                    {
+                        info.SmartType = SmartType.Generic;
+                        info.Smart = smart;
+                        continue;
+                    }
+
+                    smart.Dispose();
+                }
+
+                info.SmartType = SmartType.Unsupported;
+                info.Smart = SmartUnsupported.Default;
             }
 
-            info.SmartType = SmartType.Unsupported;
-            info.Smart = SmartUnsupported.Default;
+            list.Sort(IndexComparison);
+
+            return list;
         }
-
-        list.Sort(IndexComparison);
-
-        return list;
+        catch
+        {
+            foreach (var disk in list)
+            {
+                disk.Dispose();
+            }
+            throw;
+        }
     }
 
     private static int IndexComparison(IDiskInfo x, IDiskInfo y) => (int)x.Index - (int)y.Index;
 
-    private static bool IsVirtualDisk(string model)
-    {
-        return model.StartsWith("Virtual HD", StringComparison.OrdinalIgnoreCase);
-    }
+    // ReSharper disable StringLiteralTypo
+    private static bool IsVirtualDisk(string model) =>
+        model.StartsWith("Virtual HD", StringComparison.OrdinalIgnoreCase) ||
+        model.StartsWith("VMware Virtual", StringComparison.OrdinalIgnoreCase) ||
+        model.StartsWith("QEMU", StringComparison.OrdinalIgnoreCase) ||
+        model.Contains("VirtIO", StringComparison.OrdinalIgnoreCase);
+    // ReSharper restore StringLiteralTypo
 
     //------------------------------------------------------------------------
     // Helper

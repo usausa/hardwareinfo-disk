@@ -7,7 +7,7 @@ using Microsoft.Win32.SafeHandles;
 
 using static HardwareInfo.Disk.NativeMethods;
 
-public sealed class SmartUsb : ISmartGeneric, IDisposable
+internal sealed class SmartUsb : ISmartGeneric, IDisposable
 {
     private const int MaxAttributeCount = 30;
 
@@ -46,9 +46,20 @@ public sealed class SmartUsb : ISmartGeneric, IDisposable
         buffer = NativeMemory.Alloc((nuint)BufferSize);
     }
 
-    public unsafe void Dispose()
+    ~SmartUsb()
+    {
+        FreeBuffer();
+    }
+
+    public void Dispose()
     {
         handle.Dispose();
+        FreeBuffer();
+        GC.SuppressFinalize(this);
+    }
+
+    private unsafe void FreeBuffer()
+    {
         if (buffer != null)
         {
             NativeMemory.Free(buffer);

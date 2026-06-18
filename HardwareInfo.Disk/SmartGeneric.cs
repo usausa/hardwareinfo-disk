@@ -64,9 +64,20 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
         buffer = NativeMemory.Alloc((nuint)BufferLength);
     }
 
-    public unsafe void Dispose()
+    ~SmartGeneric()
+    {
+        FreeBuffer();
+    }
+
+    public void Dispose()
     {
         handle.Dispose();
+        FreeBuffer();
+        GC.SuppressFinalize(this);
+    }
+
+    private unsafe void FreeBuffer()
+    {
         if (buffer != null)
         {
             NativeMemory.Free(buffer);

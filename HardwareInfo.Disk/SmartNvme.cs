@@ -70,9 +70,20 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         buffer = NativeMemory.Alloc((nuint)BufferSize);
     }
 
-    public unsafe void Dispose()
+    ~SmartNvme()
+    {
+        FreeBuffer();
+    }
+
+    public void Dispose()
     {
         handle.Dispose();
+        FreeBuffer();
+        GC.SuppressFinalize(this);
+    }
+
+    private unsafe void FreeBuffer()
+    {
         if (buffer != null)
         {
             NativeMemory.Free(buffer);

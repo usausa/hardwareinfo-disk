@@ -99,7 +99,6 @@ static void DisplayInfo()
 
             Console.WriteLine("  SMART:");
             ShowSmartTable(rows);
-
         }
     }
 

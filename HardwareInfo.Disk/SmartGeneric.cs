@@ -22,7 +22,9 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 
     private readonly byte deviceNumber;
 
-    private unsafe void* buffer;
+    private readonly SafeNativeMemoryHandle buffer;
+
+    private bool disposed;
 
     public bool LastUpdate { get; private set; }
 
@@ -34,66 +36,68 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
     }
 #pragma warning restore CA1810
 
-    public unsafe SmartGeneric(SafeFileHandle handle, byte deviceNumber)
+    public SmartGeneric(SafeFileHandle handle, byte deviceNumber)
     {
         this.handle = handle;
         this.deviceNumber = deviceNumber;
-
-        var parameter = new SENDCMDINPARAMS
+        try
         {
-            DriveNumber = this.deviceNumber,
-            DriveRegs =
+            var parameter = new SENDCMDINPARAMS
             {
-                FeaturesReg = SMART_FEATURES.ENABLE_SMART,
-                CylLowReg = SMART_LBA_MID,
-                CylHighReg = SMART_LBA_HI,
-                CommandReg = ATA_COMMAND.ATA_SMART
-            }
-        };
-        var output = default(SENDCMDOUTPARAMS);
-        _ = DeviceIoControl(
-            handle,
-            DFP_SEND_DRIVE_COMMAND,
-            ref parameter,
-            SendCommandInParamsSize,
-            ref output,
-            SendCommandOutParamsSize,
-            out _,
-            IntPtr.Zero);
+                DriveNumber = this.deviceNumber,
+                DriveRegs =
+                {
+                    FeaturesReg = SMART_FEATURES.ENABLE_SMART,
+                    CylLowReg = SMART_LBA_MID,
+                    CylHighReg = SMART_LBA_HI,
+                    CommandReg = ATA_COMMAND.ATA_SMART
+                }
+            };
+            var output = default(SENDCMDOUTPARAMS);
+            _ = DeviceIoControl(
+                handle,
+                DFP_SEND_DRIVE_COMMAND,
+                ref parameter,
+                SendCommandInParamsSize,
+                ref output,
+                SendCommandOutParamsSize,
+                out _,
+                IntPtr.Zero);
 
-        buffer = NativeMemory.Alloc((nuint)BufferLength);
-    }
-
-    ~SmartGeneric()
-    {
-        FreeBuffer();
+            buffer = new SafeNativeMemoryHandle((nuint)BufferLength);
+        }
+        catch
+        {
+            handle.Dispose();
+            throw;
+        }
     }
 
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
         handle.Dispose();
-        FreeBuffer();
-        GC.SuppressFinalize(this);
+        buffer.Dispose();
+        disposed = true;
     }
 
-    private unsafe void FreeBuffer()
-    {
-        if (buffer != null)
-        {
-            NativeMemory.Free(buffer);
-            buffer = null;
-        }
-    }
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
 
     public unsafe bool Update()
     {
+        ThrowIfDisposed();
+
         if (handle.IsClosed)
         {
             LastUpdate = false;
             return false;
         }
 
-        var span = new Span<byte>(buffer, BufferLength);
+        var span = new Span<byte>(buffer.Pointer, BufferLength);
         span.Clear();
 
         var parameter = new SENDCMDINPARAMS
@@ -112,7 +116,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
             DFP_RECEIVE_DRIVE_DATA,
             ref parameter,
             SendCommandInParamsSize,
-            (nint)buffer,
+            (nint)buffer.Pointer,
             BufferLength,
             out _,
             IntPtr.Zero);
@@ -121,11 +125,13 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 
     public unsafe IReadOnlyList<SmartId> GetSupportedIds()
     {
+        ThrowIfDisposed();
+
         var list = new List<SmartId>();
 
         for (var i = 0; i < MAX_DRIVE_ATTRIBUTES; i++)
         {
-            var attr = (SMART_ATTRIBUTE*)((byte*)buffer + AttributesOffset + (i * AttributesSize));
+            var attr = (SMART_ATTRIBUTE*)((byte*)buffer.Pointer + AttributesOffset + (i * AttributesSize));
             if (attr->Id != 0)
             {
                 list.Add((SmartId)attr->Id);
@@ -137,10 +143,12 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
 
     public unsafe SmartAttribute? GetAttribute(SmartId id)
     {
+        ThrowIfDisposed();
+
         var target = (byte)id;
         for (var i = 0; i < MAX_DRIVE_ATTRIBUTES; i++)
         {
-            var attr = (SMART_ATTRIBUTE*)((byte*)buffer + AttributesOffset + (i * AttributesSize));
+            var attr = (SMART_ATTRIBUTE*)((byte*)buffer.Pointer + AttributesOffset + (i * AttributesSize));
             if (attr->Id == target)
             {
                 return new SmartAttribute

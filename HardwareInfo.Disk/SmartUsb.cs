@@ -24,7 +24,9 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
 
     private readonly SafeFileHandle handle;
 
-    private unsafe void* buffer;
+    private readonly SafeNativeMemoryHandle buffer;
+
+    private bool disposed;
 
     public bool LastUpdate { get; private set; }
 
@@ -40,45 +42,48 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
     }
 #pragma warning restore CA1810
 
-    public unsafe SmartUsb(SafeFileHandle handle)
+    public SmartUsb(SafeFileHandle handle)
     {
         this.handle = handle;
-        buffer = NativeMemory.Alloc((nuint)BufferSize);
-    }
-
-    ~SmartUsb()
-    {
-        FreeBuffer();
+        try
+        {
+            buffer = new SafeNativeMemoryHandle((nuint)BufferSize);
+        }
+        catch
+        {
+            handle.Dispose();
+            throw;
+        }
     }
 
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
         handle.Dispose();
-        FreeBuffer();
-        GC.SuppressFinalize(this);
+        buffer.Dispose();
+        disposed = true;
     }
 
-    private unsafe void FreeBuffer()
-    {
-        if (buffer != null)
-        {
-            NativeMemory.Free(buffer);
-            buffer = null;
-        }
-    }
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
 
     public unsafe bool Update()
     {
+        ThrowIfDisposed();
+
         if (handle.IsClosed)
         {
             LastUpdate = false;
             return false;
         }
 
-        var span = new Span<byte>(buffer, BufferSize);
+        var span = new Span<byte>(buffer.Pointer, BufferSize);
         span.Clear();
 
-        var swb = (SCSI_PASS_THROUGH_WITH_BUFFERS*)buffer;
+        var swb = (SCSI_PASS_THROUGH_WITH_BUFFERS*)buffer.Pointer;
         swb->Spt.Length = SptSize;
         swb->Spt.CdbLength = 12;
         swb->Spt.DataIn = SCSI_IOCTL_DATA_IN;
@@ -102,9 +107,9 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
         var ret = DeviceIoControl(
             handle,
             IOCTL_SCSI_PASS_THROUGH,
-            (nint)buffer,
+            (nint)buffer.Pointer,
             BufferSize,
-            (nint)buffer,
+            (nint)buffer.Pointer,
             BufferSize,
             out var returnedBytes,
             IntPtr.Zero);
@@ -115,11 +120,13 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
 
     public unsafe IReadOnlyList<SmartId> GetSupportedIds()
     {
+        ThrowIfDisposed();
+
         var list = new List<SmartId>();
 
         for (var i = 0; i < MaxAttributeCount; i++)
         {
-            var attr = (SMART_ATTRIBUTE*)((byte*)buffer + AttributesOffset + (i * AttributesSize));
+            var attr = (SMART_ATTRIBUTE*)((byte*)buffer.Pointer + AttributesOffset + (i * AttributesSize));
             if (attr->Id != 0)
             {
                 list.Add((SmartId)attr->Id);
@@ -131,10 +138,12 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
 
     public unsafe SmartAttribute? GetAttribute(SmartId id)
     {
+        ThrowIfDisposed();
+
         var target = (byte)id;
         for (var i = 0; i < MaxAttributeCount; i++)
         {
-            var attr = (SMART_ATTRIBUTE*)((byte*)buffer + AttributesOffset + (i * AttributesSize));
+            var attr = (SMART_ATTRIBUTE*)((byte*)buffer.Pointer + AttributesOffset + (i * AttributesSize));
             if (attr->Id == target)
             {
                 return new SmartAttribute

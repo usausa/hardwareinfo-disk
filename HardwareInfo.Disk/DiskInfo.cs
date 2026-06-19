@@ -68,29 +68,35 @@ public static class DiskInfo
                 // NVMe
                 if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeNvme)
                 {
-                    info.SmartType = SmartType.Nvme;
+#pragma warning disable CA2000
                     info.Smart = new SmartNvme(OpenDevice(info.DeviceId));
+#pragma warning restore CA2000
                     info.Smart.Update();
+                    info.SmartType = SmartType.Nvme;
                     continue;
                 }
 
                 // ATA
                 if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata)
                 {
-                    info.SmartType = SmartType.Generic;
+#pragma warning disable CA2000
                     info.Smart = new SmartGeneric(OpenDevice(info.DeviceId), (byte)info.Index);
+#pragma warning restore CA2000
                     info.Smart.Update();
+                    info.SmartType = SmartType.Generic;
                     continue;
                 }
 
                 // USB
                 if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeUsb)
                 {
+#pragma warning disable CA2000
                     var smart = new SmartUsb(OpenDevice(info.DeviceId));
+#pragma warning restore CA2000
                     if (smart.Update())
                     {
-                        info.SmartType = SmartType.Generic;
                         info.Smart = smart;
+                        info.SmartType = SmartType.Generic;
                         continue;
                     }
 

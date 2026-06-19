@@ -16,7 +16,9 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     private readonly SafeFileHandle handle;
 
-    private unsafe void* buffer;
+    private readonly SafeNativeMemoryHandle buffer;
+
+    private bool disposed;
 
     public bool LastUpdate { get; private set; }
 
@@ -64,45 +66,48 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
     }
 #pragma warning restore CA1810
 
-    public unsafe SmartNvme(SafeFileHandle handle)
+    public SmartNvme(SafeFileHandle handle)
     {
         this.handle = handle;
-        buffer = NativeMemory.Alloc((nuint)BufferSize);
-    }
-
-    ~SmartNvme()
-    {
-        FreeBuffer();
+        try
+        {
+            buffer = new SafeNativeMemoryHandle((nuint)BufferSize);
+        }
+        catch
+        {
+            handle.Dispose();
+            throw;
+        }
     }
 
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
         handle.Dispose();
-        FreeBuffer();
-        GC.SuppressFinalize(this);
+        buffer.Dispose();
+        disposed = true;
     }
 
-    private unsafe void FreeBuffer()
-    {
-        if (buffer != null)
-        {
-            NativeMemory.Free(buffer);
-            buffer = null;
-        }
-    }
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
 
     public unsafe bool Update()
     {
+        ThrowIfDisposed();
+
         if (handle.IsClosed)
         {
             LastUpdate = false;
             return false;
         }
 
-        var span = new Span<byte>(buffer, BufferSize);
+        var span = new Span<byte>(buffer.Pointer, BufferSize);
         span.Clear();
 
-        var query = (STORAGE_QUERY_BUFFER*)buffer;
+        var query = (STORAGE_QUERY_BUFFER*)buffer.Pointer;
         query->ProtocolSpecific.ProtocolType = STORAGE_PROTOCOL_TYPE.ProtocolTypeNvme;
         query->ProtocolSpecific.DataType = (uint)STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage;
         query->ProtocolSpecific.ProtocolDataRequestValue = (uint)NVME_LOG_PAGES.NVME_LOG_PAGE_HEALTH_INFO;
@@ -111,13 +116,13 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         query->PropertyId = STORAGE_PROPERTY_ID.StorageAdapterProtocolSpecificProperty;
         query->QueryType = STORAGE_QUERY_TYPE.PropertyStandardQuery;
 
-        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, (nint)buffer, BufferSize, (nint)buffer, BufferSize, out _, IntPtr.Zero))
+        if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, (nint)buffer.Pointer, BufferSize, (nint)buffer.Pointer, BufferSize, out _, IntPtr.Zero))
         {
             LastUpdate = false;
             return false;
         }
 
-        var log = (NVME_HEALTH_INFO_LOG*)((byte*)buffer + QueryBufferOffset);
+        var log = (NVME_HEALTH_INFO_LOG*)((byte*)buffer.Pointer + QueryBufferOffset);
         CriticalWarning = log->CriticalWarning;
         Temperature = KelvinToCelsius(*(ushort*)log->CompositeTemp);
         AvailableSpare = log->AvailableSpare;

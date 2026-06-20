@@ -68,11 +68,9 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
         disposed = true;
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
-
     public unsafe bool Update()
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(disposed, this);
 
         if (handle.IsClosed)
         {
@@ -120,7 +118,7 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
 
     public unsafe IReadOnlyList<SmartId> GetSupportedIds()
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(disposed, this);
 
         var list = new List<SmartId>();
 
@@ -138,7 +136,7 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
 
     public unsafe SmartAttribute? GetAttribute(SmartId id)
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(disposed, this);
 
         var target = (byte)id;
         for (var i = 0; i < MaxAttributeCount; i++)

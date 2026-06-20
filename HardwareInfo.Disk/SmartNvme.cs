@@ -92,11 +92,9 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
         disposed = true;
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
-
     public unsafe bool Update()
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(disposed, this);
 
         if (handle.IsClosed)
         {

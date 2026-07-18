@@ -22,41 +22,41 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     public bool LastUpdate { get; private set; }
 
-    public byte CriticalWarning { get; set; }
+    public byte CriticalWarning { get; private set; }
 
-    public short Temperature { get; set; }
+    public short Temperature { get; private set; }
 
-    public byte AvailableSpare { get; set; }
+    public byte AvailableSpare { get; private set; }
 
-    public byte AvailableSpareThreshold { get; set; }
+    public byte AvailableSpareThreshold { get; private set; }
 
-    public byte PercentageUsed { get; set; }
+    public byte PercentageUsed { get; private set; }
 
-    public ulong DataUnitRead { get; set; }
+    public ulong DataUnitRead { get; private set; }
 
-    public ulong DataUnitWritten { get; set; }
+    public ulong DataUnitWritten { get; private set; }
 
-    public ulong HostReadCommands { get; set; }
+    public ulong HostReadCommands { get; private set; }
 
-    public ulong HostWriteCommands { get; set; }
+    public ulong HostWriteCommands { get; private set; }
 
-    public ulong ControllerBusyTime { get; set; }
+    public ulong ControllerBusyTime { get; private set; }
 
-    public ulong PowerCycles { get; set; }
+    public ulong PowerCycles { get; private set; }
 
-    public ulong PowerOnHours { get; set; }
+    public ulong PowerOnHours { get; private set; }
 
-    public ulong UnsafeShutdowns { get; set; }
+    public ulong UnsafeShutdowns { get; private set; }
 
-    public ulong MediaErrors { get; set; }
+    public ulong MediaErrors { get; private set; }
 
-    public ulong ErrorInfoLogEntries { get; set; }
+    public ulong ErrorInfoLogEntries { get; private set; }
 
-    public uint WarningCompositeTemperatureTime { get; set; }
+    public uint WarningCompositeTemperatureTime { get; private set; }
 
-    public uint CriticalCompositeTemperatureTime { get; set; }
+    public uint CriticalCompositeTemperatureTime { get; private set; }
 
-    public short[] TemperatureSensors { get; set; } = new short[8];
+    public short[] TemperatureSensors { get; } = new short[8];
 
 #pragma warning disable CA1810
     static unsafe SmartNvme()

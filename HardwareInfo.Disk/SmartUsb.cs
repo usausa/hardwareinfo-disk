@@ -125,7 +125,7 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
         for (var i = 0; i < MaxAttributeCount; i++)
         {
             var attr = (SMART_ATTRIBUTE*)((byte*)buffer.Pointer + AttributesOffset + (i * AttributesSize));
-            if (attr->Id != 0)
+            if ((attr->Id != 0) && (attr->Id != 0xFF))
             {
                 list.Add((SmartId)attr->Id);
             }

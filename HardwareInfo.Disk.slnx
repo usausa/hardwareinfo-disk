@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/Example/">
-    <Project Path="ExampleDiskInfo/ExampleDiskInfo.csproj" />
+    <Project Path="ExampleDiskInfo/ExampleDiskInfo.csproj" DefaultStartup="true" />
   </Folder>
   <Folder Name="/Library/">
     <Project Path="HardwareInfo.Disk.Tool/HardwareInfo.Disk.Tool.csproj" />

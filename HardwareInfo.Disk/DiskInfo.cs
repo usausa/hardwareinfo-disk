@@ -26,12 +26,12 @@ public static class DiskInfo
                 var info = new DiskInfoGeneric
                 {
                     Index = Convert.ToUInt32(disk.Properties["Index"].Value, CultureInfo.InvariantCulture),
-                    DeviceId = (string)disk.Properties["DeviceID"].Value,
-                    PnpDeviceId = (string)disk.Properties["PNPDeviceID"].Value,
-                    Status = (string)disk.Properties["Status"].Value,
-                    Model = (string)disk.Properties["Model"].Value,
-                    SerialNumber = (string)disk.Properties["SerialNumber"].Value,
-                    FirmwareRevision = (string)disk.Properties["FirmwareRevision"].Value,
+                    DeviceId = disk.Properties["DeviceID"].Value as string ?? string.Empty,
+                    PnpDeviceId = disk.Properties["PNPDeviceID"].Value as string ?? string.Empty,
+                    Status = disk.Properties["Status"].Value as string ?? string.Empty,
+                    Model = disk.Properties["Model"].Value as string ?? string.Empty,
+                    SerialNumber = disk.Properties["SerialNumber"].Value as string ?? string.Empty,
+                    FirmwareRevision = disk.Properties["FirmwareRevision"].Value as string ?? string.Empty,
                     Size = Convert.ToUInt64(disk.Properties["Size"].Value, CultureInfo.InvariantCulture),
                     BytesPerSector = Convert.ToUInt32(disk.Properties["BytesPerSector"].Value, CultureInfo.InvariantCulture),
                     SectorsPerTrack = Convert.ToUInt32(disk.Properties["SectorsPerTrack"].Value, CultureInfo.InvariantCulture),
@@ -69,26 +69,36 @@ public static class DiskInfo
                 if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeNvme)
                 {
 #pragma warning disable CA2000
-                    info.Smart = new SmartNvme(OpenDevice(info.DeviceId));
+                    var smart = new SmartNvme(OpenDevice(info.DeviceId));
 #pragma warning restore CA2000
-                    info.Smart.Update();
-                    info.SmartType = SmartType.Nvme;
-                    continue;
+                    if (smart.Update())
+                    {
+                        info.Smart = smart;
+                        info.SmartType = SmartType.Nvme;
+                        continue;
+                    }
+
+                    smart.Dispose();
                 }
 
                 // ATA
-                if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata)
+                else if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata)
                 {
 #pragma warning disable CA2000
-                    info.Smart = new SmartGeneric(OpenDevice(info.DeviceId), (byte)info.Index);
+                    var smart = new SmartGeneric(OpenDevice(info.DeviceId), (byte)info.Index);
 #pragma warning restore CA2000
-                    info.Smart.Update();
-                    info.SmartType = SmartType.Generic;
-                    continue;
+                    if (smart.Update())
+                    {
+                        info.Smart = smart;
+                        info.SmartType = SmartType.Generic;
+                        continue;
+                    }
+
+                    smart.Dispose();
                 }
 
                 // USB
-                if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeUsb)
+                else if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeUsb)
                 {
 #pragma warning disable CA2000
                     var smart = new SmartUsb(OpenDevice(info.DeviceId));

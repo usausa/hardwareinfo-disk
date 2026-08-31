@@ -169,7 +169,7 @@ internal static partial class NativeMethods
     //------------------------------------------------------------------------
 
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct STORAGE_PROPERTY_QUERY
+    public struct STORAGE_PROPERTY_QUERY
     {
         public STORAGE_PROPERTY_ID PropertyId;
         public STORAGE_QUERY_TYPE QueryType;
@@ -230,7 +230,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct STORAGE_QUERY_BUFFER
+    public struct STORAGE_QUERY_BUFFER
     {
         public STORAGE_PROPERTY_ID PropertyId;
         public STORAGE_QUERY_TYPE QueryType;
@@ -239,7 +239,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct NVME_HEALTH_INFO_LOG
+    public struct NVME_HEALTH_INFO_LOG
     {
         public byte CriticalWarning;
         public fixed byte CompositeTemp[2];
@@ -277,7 +277,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct SENDCMDINPARAMS
+    public struct SENDCMDINPARAMS
     {
         public uint BufferSize;
         public IDEREGS DriveRegs;
@@ -288,7 +288,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct DRIVERSTATUS
+    public struct DRIVERSTATUS
     {
         public byte DriverError;
         public byte IDEError;
@@ -296,7 +296,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct SENDCMDOUTPARAMS
+    public struct SENDCMDOUTPARAMS
     {
         public uint BufferSize;
         public DRIVERSTATUS DriverStatus;
@@ -304,7 +304,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct SMART_ATTRIBUTE
+    public struct SMART_ATTRIBUTE
     {
         public byte Id;
         public short Flags;
@@ -315,7 +315,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct ATTRIBUTECMDOUTPARAMS
+    public struct ATTRIBUTECMDOUTPARAMS
     {
         public uint BufferSize;
         public DRIVERSTATUS DriverStatus;
@@ -325,7 +325,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct SCSI_PASS_THROUGH
+    public struct SCSI_PASS_THROUGH
     {
         public short Length;
         public byte ScsiStatus;
@@ -343,7 +343,7 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct SCSI_PASS_THROUGH_WITH_BUFFERS
+    public struct SCSI_PASS_THROUGH_WITH_BUFFERS
     {
         public SCSI_PASS_THROUGH Spt;
         public fixed byte Sense[32];

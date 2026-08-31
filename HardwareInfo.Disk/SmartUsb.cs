@@ -111,7 +111,7 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
             BufferSize,
             out var returnedBytes,
             IntPtr.Zero);
-        LastUpdate = ret && returnedBytes > DataOffset;
+        LastUpdate = ret && (returnedBytes > DataOffset);
 
         return LastUpdate;
     }

@@ -31,6 +31,7 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
     public bool LastUpdate { get; private set; }
 
 #pragma warning disable CA1810
+    // ReSharper disable once RedundantUnsafeContext
     static unsafe SmartUsb()
     {
         SCSI_PASS_THROUGH_WITH_BUFFERS s = default;

@@ -59,6 +59,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
     public short[] TemperatureSensors { get; } = new short[8];
 
 #pragma warning disable CA1810
+    // ReSharper disable once RedundantUnsafeContext
     static unsafe SmartNvme()
     {
         STORAGE_QUERY_BUFFER s = default;

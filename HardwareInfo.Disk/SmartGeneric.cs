@@ -29,6 +29,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
     public bool LastUpdate { get; private set; }
 
 #pragma warning disable CA1810
+    // ReSharper disable once RedundantUnsafeContext
     static unsafe SmartGeneric()
     {
         ATTRIBUTECMDOUTPARAMS s = default;
@@ -85,6 +86,7 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
         disposed = true;
     }
 
+    // ReSharper disable once RedundantUnsafeContext
     public unsafe bool Update()
     {
         ObjectDisposedException.ThrowIf(disposed, this);

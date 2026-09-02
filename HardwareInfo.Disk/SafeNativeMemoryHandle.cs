@@ -2,6 +2,7 @@ namespace HardwareInfo.Disk;
 
 using System.Runtime.InteropServices;
 
+// ReSharper disable once RedundantUnsafeContext
 internal sealed unsafe class SafeNativeMemoryHandle : SafeHandle
 {
     public SafeNativeMemoryHandle(nuint byteCount)

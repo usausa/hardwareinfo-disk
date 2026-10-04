@@ -6,5 +6,7 @@ internal sealed class SmartUnsupported : ISmart
 
     public bool LastUpdate => false;
 
+    public int LastError => 0;
+
     public bool Update() => false;
 }

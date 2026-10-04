@@ -16,11 +16,15 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
     private readonly SafeFileHandle handle;
 
+    private readonly int openError;
+
     private readonly SafeNativeMemoryHandle buffer;
 
     private bool disposed;
 
     public bool LastUpdate { get; private set; }
+
+    public int LastError { get; private set; }
 
     public byte CriticalWarning { get; private set; }
 
@@ -67,9 +71,10 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
     }
 #pragma warning restore CA1810
 
-    public SmartNvme(SafeFileHandle handle)
+    public SmartNvme(string devicePath)
     {
-        this.handle = handle;
+        handle = OpenDevice(devicePath, FileAccess.ReadWrite);
+        openError = handle.IsInvalid ? Marshal.GetLastPInvokeError() : 0;
         try
         {
             buffer = new SafeNativeMemoryHandle((nuint)BufferSize);
@@ -97,8 +102,9 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
     {
         ObjectDisposedException.ThrowIf(disposed, this);
 
-        if (handle.IsClosed)
+        if (handle.IsInvalid)
         {
+            LastError = openError;
             LastUpdate = false;
             return false;
         }
@@ -117,6 +123,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
 
         if (!DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, (nint)buffer.Pointer, BufferSize, (nint)buffer.Pointer, BufferSize, out _, IntPtr.Zero))
         {
+            LastError = Marshal.GetLastPInvokeError();
             LastUpdate = false;
             return false;
         }
@@ -144,6 +151,7 @@ internal sealed class SmartNvme : ISmartNvme, IDisposable
             TemperatureSensors[i] = KelvinToCelsius(log->TemperatureSensor[i]);
         }
 
+        LastError = 0;
         LastUpdate = true;
         return true;
     }

@@ -8,7 +8,7 @@ internal sealed unsafe class SafeNativeMemoryHandle : SafeHandle
     public SafeNativeMemoryHandle(nuint byteCount)
         : base(IntPtr.Zero, true)
     {
-        SetHandle((IntPtr)NativeMemory.Alloc(byteCount));
+        SetHandle((IntPtr)NativeMemory.AllocZeroed(byteCount));
     }
 
     public override bool IsInvalid => handle == IntPtr.Zero;

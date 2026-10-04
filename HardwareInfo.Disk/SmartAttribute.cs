@@ -12,6 +12,8 @@ public struct SmartAttribute
 
     public byte WorstValue { get; set; }
 
+    public byte Threshold { get; set; }
+
     public ulong RawValue { get; set; }
 }
 #pragma warning restore CA1815

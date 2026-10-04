@@ -43,6 +43,12 @@ static void DisplayInfo()
         {
             var smart = (ISmartNvme)disk.Smart;
 
+            Console.WriteLine($"  SMART: Update=[{smart.LastUpdate}] Error=[{smart.LastError}]");
+            if (!smart.LastUpdate)
+            {
+                continue;
+            }
+
             var rows = new List<KeyValuePair<string, string>>
             {
                 new("CriticalWarning", $"{smart.CriticalWarning:X2}"),
@@ -72,12 +78,17 @@ static void DisplayInfo()
                 }
             }
 
-            Console.WriteLine("  SMART:");
             ShowSmartTable(rows);
         }
         else if (disk.SmartType == SmartType.Generic)
         {
             var smart = (ISmartGeneric)disk.Smart;
+
+            Console.WriteLine($"  SMART: Update=[{smart.LastUpdate}] Error=[{smart.LastError}] Assessment=[{smart.Assessment}]");
+            if (!smart.LastUpdate)
+            {
+                continue;
+            }
 
             var rows = new List<KeyValuePair<string, string>>();
             foreach (var id in smart.GetSupportedIds())
@@ -97,7 +108,6 @@ static void DisplayInfo()
                 }
             }
 
-            Console.WriteLine("  SMART:");
             ShowSmartTable(rows);
         }
     }

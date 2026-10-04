@@ -15,6 +15,9 @@ internal static partial class NativeMethods
 
     public const int MAX_DRIVE_ATTRIBUTES = 512;
 
+    public const int ERROR_ACCESS_DENIED = 5;
+    public const int ERROR_IO_DEVICE = 1117;
+
     public const uint IOCTL_SCSI_PASS_THROUGH = 0x04d004;
     public const uint IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400;
 
@@ -23,10 +26,15 @@ internal static partial class NativeMethods
 
     public const byte SMART_LBA_HI = 0xC2;
     public const byte SMART_LBA_MID = 0x4F;
+    public const byte SMART_LBA_HI_EXCEEDED = 0x2C;
+    public const byte SMART_LBA_MID_EXCEEDED = 0xF4;
 
     public const byte SCSI_IOCTL_DATA_IN = 1;
+    public const byte SCSI_IOCTL_DATA_UNSPECIFIED = 2;
 
     public const byte READ_ATTRIBUTES = 0xD0;
+    public const byte READ_THRESHOLDS = 0xD1;
+    public const byte RETURN_SMART_STATUS = 0xDA;
 
     public const byte SMART_CMD = 0xB0;
 
@@ -304,6 +312,14 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct STATUSCMDOUTPARAMS
+    {
+        public uint BufferSize;
+        public DRIVERSTATUS DriverStatus;
+        public IDEREGS DriveRegs;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SMART_ATTRIBUTE
     {
         public byte Id;
@@ -315,6 +331,14 @@ internal static partial class NativeMethods
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct SMART_THRESHOLD
+    {
+        public byte Id;
+        public byte Threshold;
+        public fixed byte Reserved[10];
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct ATTRIBUTECMDOUTPARAMS
     {
         public uint BufferSize;
@@ -322,6 +346,16 @@ internal static partial class NativeMethods
         public byte Version;
         public byte Reserved;
         public fixed byte Attributes[12 * MAX_DRIVE_ATTRIBUTES];
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct THRESHOLDCMDOUTPARAMS
+    {
+        public uint BufferSize;
+        public DRIVERSTATUS DriverStatus;
+        public byte Version;
+        public byte Reserved;
+        public fixed byte Thresholds[12 * MAX_DRIVE_ATTRIBUTES];
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -415,6 +449,19 @@ internal static partial class NativeMethods
         ref SENDCMDINPARAMS inBuffer,
         int inBufferSize,
         ref SENDCMDOUTPARAMS outBuffer,
+        int outBufferSize,
+        out uint bytesReturned,
+        IntPtr overlapped);
+
+    [LibraryImport(Kernel32, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool DeviceIoControl(
+        SafeHandle device,
+        uint ioControlCode,
+        ref SENDCMDINPARAMS inBuffer,
+        int inBufferSize,
+        ref STATUSCMDOUTPARAMS outBuffer,
         int outBufferSize,
         out uint bytesReturned,
         IntPtr overlapped);

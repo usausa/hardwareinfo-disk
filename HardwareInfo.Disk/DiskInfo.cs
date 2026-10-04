@@ -8,6 +8,7 @@ using System.Runtime.Versioning;
 
 using Microsoft.Win32.SafeHandles;
 
+using static HardwareInfo.Disk.Helper;
 using static HardwareInfo.Disk.NativeMethods;
 
 [SupportedOSPlatform("windows")]
@@ -68,10 +69,8 @@ public static class DiskInfo
                 // NVMe
                 if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeNvme)
                 {
-#pragma warning disable CA2000
-                    var smart = new SmartNvme(OpenDevice(info.DeviceId));
-#pragma warning restore CA2000
-                    if (smart.Update())
+                    var smart = new SmartNvme(info.DeviceId);
+                    if (smart.Update() || (smart.LastError == ERROR_ACCESS_DENIED))
                     {
                         info.Smart = smart;
                         info.SmartType = SmartType.Nvme;
@@ -84,10 +83,8 @@ public static class DiskInfo
                 // ATA
                 else if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeAta or STORAGE_BUS_TYPE.BusTypeSata)
                 {
-#pragma warning disable CA2000
-                    var smart = new SmartGeneric(OpenDevice(info.DeviceId), (byte)info.Index);
-#pragma warning restore CA2000
-                    if (smart.Update())
+                    var smart = new SmartGeneric(info.DeviceId, (byte)info.Index);
+                    if (smart.Update() || (smart.LastError == ERROR_ACCESS_DENIED))
                     {
                         info.Smart = smart;
                         info.SmartType = SmartType.Generic;
@@ -100,10 +97,8 @@ public static class DiskInfo
                 // USB
                 else if (descriptor.BusType is STORAGE_BUS_TYPE.BusTypeUsb)
                 {
-#pragma warning disable CA2000
-                    var smart = new SmartUsb(OpenDevice(info.DeviceId));
-#pragma warning restore CA2000
-                    if (smart.Update())
+                    var smart = new SmartUsb(info.DeviceId);
+                    if (smart.Update() || (smart.LastError == ERROR_ACCESS_DENIED))
                     {
                         info.Smart = smart;
                         info.SmartType = SmartType.Generic;
@@ -145,14 +140,12 @@ public static class DiskInfo
     // Helper
     //------------------------------------------------------------------------
 
-    private static SafeFileHandle OpenDevice(string devicePath) =>
-        CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
-
     private sealed record StorageDescriptor(STORAGE_BUS_TYPE BusType, bool Removable, uint PhysicalBlockSize);
 
     private static unsafe StorageDescriptor? GetStorageDescriptor(string devicePath)
     {
-        using var handle = OpenDevice(devicePath);
+        // Query only access (no administrator privilege required)
+        using var handle = OpenDevice(devicePath, 0);
         if (handle.IsInvalid)
         {
             return null;

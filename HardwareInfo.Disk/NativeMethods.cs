@@ -13,7 +13,8 @@ internal static partial class NativeMethods
     // Const
     //------------------------------------------------------------------------
 
-    public const int MAX_DRIVE_ATTRIBUTES = 512;
+    public const int READ_ATTRIBUTE_BUFFER_SIZE = 512;
+    public const int READ_THRESHOLD_BUFFER_SIZE = 512;
 
     public const int ERROR_ACCESS_DENIED = 5;
     public const int ERROR_IO_DEVICE = 1117;
@@ -243,7 +244,7 @@ internal static partial class NativeMethods
         public STORAGE_PROPERTY_ID PropertyId;
         public STORAGE_QUERY_TYPE QueryType;
         public STORAGE_PROTOCOL_SPECIFIC_DATA ProtocolSpecific;
-        public fixed byte Buffer[4096];
+        public fixed byte Buffer[512];
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -345,7 +346,7 @@ internal static partial class NativeMethods
         public DRIVERSTATUS DriverStatus;
         public byte Version;
         public byte Reserved;
-        public fixed byte Attributes[12 * MAX_DRIVE_ATTRIBUTES];
+        public fixed byte Attributes[READ_ATTRIBUTE_BUFFER_SIZE - 2];
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -355,7 +356,7 @@ internal static partial class NativeMethods
         public DRIVERSTATUS DriverStatus;
         public byte Version;
         public byte Reserved;
-        public fixed byte Thresholds[12 * MAX_DRIVE_ATTRIBUTES];
+        public fixed byte Thresholds[READ_THRESHOLD_BUFFER_SIZE - 2];
     }
 
     [StructLayout(LayoutKind.Sequential)]

@@ -10,7 +10,7 @@ public sealed class MainWindowViewModel
 
     public MainWindowViewModel()
     {
-        foreach (var disk in DiskInfo.GetInformation().OrderBy(static x => x.GetDrives().FirstOrDefault()?.Name))
+        foreach (var disk in DiskInfo.GetInformation().OrderBy(static x => x.GetDrives().FirstOrDefault()?.Name, StringComparer.Ordinal))
         {
             var info = new DiskInfoModel(disk);
             info.Update();

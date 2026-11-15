@@ -43,8 +43,12 @@ internal sealed class SmartUsb : ISmartGeneric, IDisposable
     public SmartAssessment Assessment { get; private set; }
 
 #pragma warning disable CA1810
+#if NET11_0_OR_GREATER
+    static SmartUsb()
+#else
     // ReSharper disable once RedundantUnsafeContext
     static unsafe SmartUsb()
+#endif
     {
         SCSI_PASS_THROUGH_WITH_BUFFERS s = default;
         SenseOffset = (int)(s.Sense - (byte*)Unsafe.AsPointer(ref s));

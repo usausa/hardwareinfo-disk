@@ -46,8 +46,12 @@ internal sealed class SmartGeneric : ISmartGeneric, IDisposable
     public SmartAssessment Assessment { get; private set; }
 
 #pragma warning disable CA1810
+#if NET11_0_OR_GREATER
+    static SmartGeneric()
+#else
     // ReSharper disable once RedundantUnsafeContext
     static unsafe SmartGeneric()
+#endif
     {
         ATTRIBUTECMDOUTPARAMS s = default;
         AttributesOffset = (int)(s.Attributes - (byte*)Unsafe.AsPointer(ref s));
